@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Piktosaur (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Piktosaur (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
