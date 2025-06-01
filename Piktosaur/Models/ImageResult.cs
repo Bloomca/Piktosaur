@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace Piktosaur.Models
             StorageFile file = await StorageFile.GetFileFromPathAsync(Path);
 
             StorageItemThumbnail thumbnail = await file.GetThumbnailAsync(
-                ThumbnailMode.PicturesView,
+                ThumbnailMode.SingleItem,
                 200,
                 ThumbnailOptions.UseCurrentScale
             );

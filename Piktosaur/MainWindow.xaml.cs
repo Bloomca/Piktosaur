@@ -14,6 +14,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 
 using Piktosaur.Services;
+using Piktosaur.Views;
 using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -39,16 +40,31 @@ namespace Piktosaur
             var images = result.Results;
             List<Task> thumbnailTasks = [];
             // pre-generate first 15 image thumbnails
-            foreach (var image in images[..15])
+            foreach (var image in images.Take(15))
             {
                 thumbnailTasks.Add(image.GenerateThumbnail());
             }
 
             // 1. Render Progress bar
 
+            var ProgressElement = new ProgressBar {
+                IsIndeterminate=true,
+                ShowError=false,
+                ShowPaused=false
+            };
+
+            ContainerElement.Children.Add(ProgressElement);
+
             await Task.WhenAll(thumbnailTasks);
 
-            // 2. Render Control for image thumbnails
+            ContainerElement.Children.Remove(ProgressElement);
+
+            foreach (var image in images)
+            {
+                var ImageComponent = new ImageFile(image);
+
+                MainContainer.Children.Add(ImageComponent);
+            }
         }
     }
 }
