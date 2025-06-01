@@ -17,7 +17,7 @@ namespace Piktosaur.Models
 
         public List<ImagesData> SubdirectoriesImagesData { get; private set; } = [];
 
-        public List<ImageResult> Results { get; private set; };
+        public List<ImageResult> Results { get; private set; }
 
         public ImagesData(string directoryPath, List<ImageResult> results)
         {

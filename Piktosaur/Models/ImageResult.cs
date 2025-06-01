@@ -20,7 +20,7 @@ namespace Piktosaur.Models
             Path = path;
         }
 
-        public async void GenerateThumbnail()
+        public async Task GenerateThumbnail()
         {
             StorageFile file = await StorageFile.GetFileFromPathAsync(Path);
 

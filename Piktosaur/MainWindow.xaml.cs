@@ -13,6 +13,9 @@ using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
+using Piktosaur.Services;
+using System.Threading.Tasks;
+
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -26,6 +29,26 @@ namespace Piktosaur
         public MainWindow()
         {
             InitializeComponent();
+
+            LoadImages();
+        }
+
+        private async void LoadImages()
+        {
+            var result = Search.GetImages(Search.GetPicturesFolder());
+            var images = result.Results;
+            List<Task> thumbnailTasks = [];
+            // pre-generate first 15 image thumbnails
+            foreach (var image in images[..15])
+            {
+                thumbnailTasks.Add(image.GenerateThumbnail());
+            }
+
+            // 1. Render Progress bar
+
+            await Task.WhenAll(thumbnailTasks);
+
+            // 2. Render Control for image thumbnails
         }
     }
 }

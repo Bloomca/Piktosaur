@@ -14,7 +14,7 @@ namespace Piktosaur.Services
 {
     public class Search
     {
-        public static string[] ImageExtensions = ["jpg", "jpeg", "png"];
+        public static string[] ImageExtensions = [".jpg", ".jpeg", ".png"];
         public static string GetPicturesFolder()
         {
             return Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
