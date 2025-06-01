@@ -20,10 +20,12 @@ namespace Piktosaur.Services
             return Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
         }
 
-        public static void GetImages(string path)
+        public static ImagesData GetImages(string path)
         {
             var results = new SearchResults(path);
             ReadDirectory(path, results);
+
+            return ConvertSearchResults(results, null);
         }
 
         private static void ReadDirectory(string path, SearchResults searchResults)
@@ -55,6 +57,31 @@ namespace Piktosaur.Services
                 searchResults.AddDirectory(directoryResults);
                 ReadDirectory(directory, directoryResults);
             }
+        }
+
+        private static ImagesData ConvertSearchResults(SearchResults searchResults, ImagesData? imagesData)
+        {
+            // The top result can have empty images (so we render the top folder correctly)
+            if (imagesData == null)
+            {
+                imagesData = new ImagesData(searchResults.Path, searchResults.Images);
+            }
+
+            foreach (var directoryResult in searchResults.Directories)
+            {
+                if (directoryResult.Images.Count == 0)
+                {
+                    // if there are no images, we are skipping that directory
+                    ConvertSearchResults(directoryResult, imagesData);
+                } else
+                {
+                    var subdirectoryResult = new ImagesData(directoryResult.Path, directoryResult.Images);
+                    ConvertSearchResults(directoryResult, subdirectoryResult);
+                    imagesData.addSubdirectoryImagesData(subdirectoryResult);
+                }
+            }
+
+            return imagesData;
         }
     }
 }

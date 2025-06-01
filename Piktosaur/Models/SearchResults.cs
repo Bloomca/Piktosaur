@@ -9,9 +9,9 @@ namespace Piktosaur.Models
 {
     public class SearchResults
     {
-        public IEnumerable<ImageResult> Images { get; private set; } = [];
+        public List<ImageResult> Images { get; private set; } = [];
 
-        public IEnumerable<SearchResults> Directories { get; private set; } = [];
+        public List<SearchResults> Directories { get; private set; } = [];
 
         public string Path { get; }
 
@@ -22,12 +22,12 @@ namespace Piktosaur.Models
 
         public void AddImage(string path)
         {
-            Images.Append(new ImageResult(path));
+            Images.Add(new ImageResult(path));
         }
 
         public void AddDirectory(SearchResults directoryResults)
         {
-            Directories.Append(directoryResults);
+            Directories.Add(directoryResults);
         }
     }
 }

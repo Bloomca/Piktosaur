@@ -13,5 +13,21 @@ namespace Piktosaur.Models
     /// </summary>
     public class ImagesData
     {
+        public string DirectoryPath { get; }
+
+        public List<ImagesData> SubdirectoriesImagesData { get; private set; } = [];
+
+        public List<ImageResult> Results { get; private set; };
+
+        public ImagesData(string directoryPath, List<ImageResult> results)
+        {
+            DirectoryPath = directoryPath;
+            Results = results;
+        }
+
+        public void addSubdirectoryImagesData(ImagesData subdirectoryImagesData)
+        {
+            SubdirectoriesImagesData.Add(subdirectoryImagesData);
+        }
     }
 }
