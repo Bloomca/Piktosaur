@@ -15,6 +15,7 @@ using Windows.Foundation.Collections;
 
 using Piktosaur.Services;
 using Piktosaur.Views;
+using Piktosaur.ViewModels;
 
 using System.Threading.Tasks;
 
@@ -45,6 +46,11 @@ namespace Piktosaur
             foreach (var image in images.Take(15))
             {
                 thumbnailTasks.Add(image.GenerateThumbnail());
+            }
+
+            if (images.Count > 0)
+            {
+                AppStateVM.Shared.SelectImage(images[0].Path);
             }
 
             // 1. Render Progress bar
