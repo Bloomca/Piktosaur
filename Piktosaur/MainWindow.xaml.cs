@@ -27,6 +27,7 @@ namespace Piktosaur
     /// </summary>
     public sealed partial class MainWindow : Window
     {
+        public Piktosaur.Views.TitleBar TitleBar => CustomTitleBar;
         public MainWindow()
         {
             InitializeComponent();

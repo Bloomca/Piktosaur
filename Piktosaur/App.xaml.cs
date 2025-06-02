@@ -45,6 +45,13 @@ namespace Piktosaur
         {
             _window = new MainWindow();
             _window.ExtendsContentIntoTitleBar = true;
+
+            // Cast to MainWindow to access the TitleBar property
+            if (_window is MainWindow mainWindow)
+            {
+                _window.SetTitleBar(mainWindow.TitleBar);
+            }
+
             _window.Activate();
         }
     }

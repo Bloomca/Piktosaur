@@ -20,6 +20,12 @@ namespace Piktosaur.Services
             return Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
         }
 
+        public static string GetDownloadsFolder()
+        {
+            var userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return Path.Combine(userFolder, "Downloads");
+        }
+
         public static ImagesData GetImages(string path)
         {
             var results = new SearchResults(path);

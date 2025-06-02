@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Piktosaur.Views.TitleBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Piktosaur.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <DropDownButton HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8">
+            <DropDownButton.Content>
+                <TextBlock x:Name="Folder" Text="{x:Bind ViewModel.SelectedQuery.Name,Mode=OneWay}" />
+            </DropDownButton.Content>
+            <DropDownButton.Flyout>
+                <MenuFlyout x:Name="MenuElement" Placement="Bottom">
+                    
+                </MenuFlyout>
+            </DropDownButton.Flyout>
+        </DropDownButton>
+    </Grid>
+</UserControl>
