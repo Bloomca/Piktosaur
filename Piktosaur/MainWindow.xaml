@@ -19,9 +19,14 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <views:TitleBar x:Name="CustomTitleBar" Grid.Row="0"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="228" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <views:TitleBar x:Name="CustomTitleBar" Grid.Row="0" Grid.ColumnSpan="2"/>
         <ScrollViewer Grid.Row="1"  x:Name="MainScrollViewer">
-            <StackPanel x:Name="MainContainer" Orientation="Horizontal"/>
+            <StackPanel x:Name="MainContainer" Orientation="Vertical"/>
         </ScrollViewer>
+        <views:ImagePreview Grid.Row="1" Grid.Column="1" />
     </Grid>
 </Window>

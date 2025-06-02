@@ -14,6 +14,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 
 using Piktosaur.Models;
+using Piktosaur.ViewModels;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -28,6 +29,11 @@ namespace Piktosaur.Views
         {
             InitializeComponent();
             _imageResult = imageResult;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            AppStateVM.Shared.SelectImage(Image.Path);
         }
     }
 }

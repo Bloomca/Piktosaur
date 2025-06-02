@@ -19,7 +19,7 @@ namespace Piktosaur.ViewModels
 
         public static AppStateVM Shared = new AppStateVM();
 
-        private string? selectedImagePath;
+        private string? selectedImagePath = null;
 
         public string? SelectedImagePath {
             get => selectedImagePath;
