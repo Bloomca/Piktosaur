@@ -7,17 +7,22 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Piktosaur.Models"
+    xmlns:system="using:System"
     mc:Ignorable="d">
 
-    <GridView ItemsSource="{x:Bind ImagesByFolder.View, Mode=OneWay}"
+    <UserControl.Resources>
+        <CollectionViewSource x:Name="ImagesByFolder" 
+                          IsSourceGrouped="True" 
+                          ItemsPath="Images"/>
+    </UserControl.Resources>
+
+    <GridView ItemsSource="{Binding Source={StaticResource ImagesByFolder}}"
               SelectionChanged="GridView_SelectionChanged"
               SelectionMode="Single"
-              IsItemClickEnabled="False"
-              ContainerContentChanging="GridView_ContainerContentChanging">
+              IsItemClickEnabled="False">
         <GridView.ItemsPanel>
             <ItemsPanelTemplate>
-                <!-- Crucial to use this component for virtualization -->
-                <ItemsStackPanel Orientation="Vertical" />
+                <StackPanel Orientation="Vertical" />
             </ItemsPanelTemplate>
         </GridView.ItemsPanel>
 

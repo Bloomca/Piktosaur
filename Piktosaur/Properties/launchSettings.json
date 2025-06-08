@@ -1,10 +1,8 @@
 {
   "profiles": {
     "Piktosaur (Package)": {
-      "commandName": "MsixPackage"
-    },
-    "Piktosaur (Unpackaged)": {
-      "commandName": "Project"
+      "commandName": "MsixPackage",
+      "nativeDebugging": true
     }
   }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -27,17 +28,9 @@ namespace Piktosaur.Views
 {
     public sealed partial class ImageList : UserControl
     {
-        public CollectionViewSource ImagesByFolder { get; }
-
         public ImageList()
         {
             InitializeComponent();
-
-            ImagesByFolder = new CollectionViewSource
-            {
-                IsSourceGrouped = true,
-                ItemsPath = new PropertyPath("Images")
-            };
 
             LoadImages();
 
@@ -52,35 +45,33 @@ namespace Piktosaur.Views
             }
         }
 
-        private async void LoadImages()
+        private void LoadImages()
         {
-            var folders = new List<FolderWithImages>();
-            var currentQuery = AppStateVM.Shared.SelectedQuery;
-            var result = Search.GetImages(currentQuery.Folders[0]);
-            var images = result.Results;
-            List<Task> thumbnailTasks = [];
-            
-            // pre-generate first 15 image thumbnails
-            foreach (var image in images.Take(15))
+            try
             {
-                thumbnailTasks.Add(image.GenerateThumbnail());
-            }
+                var folders = new List<FolderWithImages>();
+                var currentQuery = AppStateVM.Shared.SelectedQuery;
+                var result = Search.GetImages(currentQuery.Folders[0]);
+                var images = result.Results;
 
-            if (images.Count > 0)
+                if (images.Count > 0)
+                {
+                    AppStateVM.Shared.SelectImage(images[0].Path);
+                }
+
+                var folderName = System.IO.Path.GetFileName(result.DirectoryPath);
+                var folderWithImages = new FolderWithImages(folderName, images);
+
+                folders.Add(folderWithImages);
+
+                HandleSubdirectories(result.SubdirectoriesImagesData, folders);
+
+                ImagesByFolder.Source = folders;
+            }
+            catch (Exception ex)
             {
-                AppStateVM.Shared.SelectImage(images[0].Path);
+                Debug.WriteLine($"Error during LoadImages: {ex}");
             }
-
-            await Task.WhenAll(thumbnailTasks);
-
-            var folderName = System.IO.Path.GetFileName(result.DirectoryPath);
-            var folderWithImages = new FolderWithImages(folderName, images);
-
-            folders.Add(folderWithImages);
-
-            HandleSubdirectories(result.SubdirectoriesImagesData, folders);
-
-            ImagesByFolder.Source = folders;
         }
 
         private void HandleSubdirectories(List<ImagesData> imagesDataList, List<FolderWithImages> folders)
@@ -124,11 +115,27 @@ namespace Piktosaur.Views
 
             if (args.Phase == 1)
             {
-                if (args.Item is not ImageResult imageItem) return;
-                await imageItem.GenerateThumbnail();
-                var imageFile = args.ItemContainer.ContentTemplateRoot as ImageFile;
-                imageFile?.RefreshThumbnail();
-                args.Handled = true;
+                if (args.Item is not ImageResult imageItem)
+                {
+                    System.Diagnostics.Trace.WriteLine("Item is not ImageResult");
+                    return;
+                }
+
+                System.Diagnostics.Trace.WriteLine($"Generating thumbnail for: {imageItem.Path}");
+
+                try
+                {
+                    await imageItem.GenerateThumbnail();
+                    System.Diagnostics.Trace.WriteLine($"Thumbnail generated for: {imageItem.Path}");
+                    var imageFile = args.ItemContainer.ContentTemplateRoot as ImageFile;
+                    imageFile?.RefreshThumbnail();
+                    args.Handled = true;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Could not refresh image thumbnail: {ex}");
+                }
+                
             }
         }
     }
