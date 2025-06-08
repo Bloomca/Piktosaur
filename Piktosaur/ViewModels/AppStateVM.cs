@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Piktosaur.Models;
 using Piktosaur.Services;
+using Windows.Storage;
 
 namespace Piktosaur.ViewModels
 {
@@ -55,6 +56,14 @@ namespace Piktosaur.ViewModels
             }
 
             return false;
+        }
+
+        public void AddFolderQuery(StorageFolder folder)
+        {
+            var newQuery = new Query(folder.Name, [folder.Path]);
+            Queries.Add(newQuery);
+
+            SelectQuery(newQuery);
         }
     }
 }
