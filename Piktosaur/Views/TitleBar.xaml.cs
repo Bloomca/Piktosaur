@@ -12,8 +12,12 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using WinRT.Interop;
+using Windows.Storage.Pickers;
+using Windows.Storage;
 
 using Piktosaur.ViewModels;
+using Piktosaur.Models;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -39,6 +43,26 @@ namespace Piktosaur.Views
                 flyoutItem.Click += (sender, e) => ViewModel.SelectQuery(savedQuery);
 
                 MenuElement.Items.Add(flyoutItem);
+            }
+
+            var openFolderFlyoutItem = new MenuFlyoutItem { Text = "Open folder" };
+            openFolderFlyoutItem.Click += (sender, e) => HandleOpenFolderClick();
+
+            MenuElement.Items.Add(openFolderFlyoutItem);
+        }
+
+        private async void HandleOpenFolderClick()
+        {
+            var folderPicker = new FolderPicker();
+            InitializeWithWindow.Initialize(folderPicker, App.MainWindowHandle);
+
+            folderPicker.SuggestedStartLocation = PickerLocationId.Desktop;
+            folderPicker.FileTypeFilter.Add("*");
+
+            StorageFolder folder = await folderPicker.PickSingleFolderAsync();
+            if (folder != null)
+            {
+                AppStateVM.Shared.AddFolderQuery(folder);
             }
         }
     }

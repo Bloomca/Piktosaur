@@ -15,6 +15,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using WinRT.Interop;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -26,6 +27,10 @@ namespace Piktosaur
     /// </summary>
     public partial class App : Application
     {
+        public static Window MainWindow {  get; private set; }
+
+        public static IntPtr MainWindowHandle => WindowNative.GetWindowHandle(MainWindow);
+
         private Window? _window;
 
         /// <summary>
@@ -44,6 +49,8 @@ namespace Piktosaur
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             _window = new MainWindow();
+            MainWindow = _window;
+
             _window.ExtendsContentIntoTitleBar = true;
 
             // Cast to MainWindow to access the TitleBar property

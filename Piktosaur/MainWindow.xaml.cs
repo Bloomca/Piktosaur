@@ -35,11 +35,23 @@ namespace Piktosaur
             InitializeComponent();
 
             LoadImages();
+
+            AppStateVM.Shared.PropertyChanged += Shared_PropertyChanged;
+        }
+
+        private void Shared_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AppStateVM.Shared.SelectedQuery))
+            {
+                LoadImages();
+            }
         }
 
         private async void LoadImages()
         {
-            var result = Search.GetImages(Search.GetPicturesFolder());
+            MainContainer.Children.Clear();
+            var currentQuery = AppStateVM.Shared.SelectedQuery;
+            var result = Search.GetImages(currentQuery.Folders[0]);
             var images = result.Results;
             List<Task> thumbnailTasks = [];
             // pre-generate first 15 image thumbnails
