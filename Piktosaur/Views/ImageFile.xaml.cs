@@ -28,7 +28,7 @@ namespace Piktosaur.Views
                 nameof(Image),
                 typeof(ImageResult),
                 typeof(ImageFile),
-                new PropertyMetadata(null));
+                new PropertyMetadata(null, OnImageChanged));
 
         public ImageResult Image
         {
@@ -39,6 +39,21 @@ namespace Piktosaur.Views
         public ImageFile()
         {
             InitializeComponent();
+        }
+
+        private static void OnImageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = d as ImageFile;
+            var imageResult = e.NewValue as ImageResult;
+
+            if (control == null) return;
+
+            control.ThumbnailImage.Source = imageResult?.Thumbnail;
+        }
+
+        public void RefreshThumbnail()
+        {
+            ThumbnailImage.Source = Image?.Thumbnail;
         }
     }
 }

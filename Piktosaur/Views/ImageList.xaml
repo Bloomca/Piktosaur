@@ -12,7 +12,8 @@
     <GridView ItemsSource="{x:Bind ImagesByFolder.View, Mode=OneWay}"
               SelectionChanged="GridView_SelectionChanged"
               SelectionMode="Single"
-              IsItemClickEnabled="False">
+              IsItemClickEnabled="False"
+              ContainerContentChanging="GridView_ContainerContentChanging">
         <GridView.ItemsPanel>
             <ItemsPanelTemplate>
                 <!-- Crucial to use this component for virtualization -->
