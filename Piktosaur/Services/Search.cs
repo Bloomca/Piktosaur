@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
+using System.Runtime.InteropServices;
 
 using Piktosaur.Models;
 
@@ -14,6 +15,20 @@ namespace Piktosaur.Services
 {
     public class Search
     {
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        static extern bool GetFileAttributesEx(string lpFileName, int fInfoLevelId, out WIN32_FILE_ATTRIBUTE_DATA lpFileInformation);
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct WIN32_FILE_ATTRIBUTE_DATA
+        {
+            public System.IO.FileAttributes dwFileAttributes;
+            public long ftCreationTime;
+            public long ftLastAccessTime;
+            public long ftLastWriteTime;
+            public uint nFileSizeHigh;
+            public uint nFileSizeLow;
+        }
+
         public static string[] ImageExtensions = [".jpg", ".jpeg", ".png"];
         public static string GetPicturesFolder()
         {
@@ -51,6 +66,14 @@ namespace Piktosaur.Services
 
                 if (ImageExtensions.Contains(fileInfo.Extension.ToLowerInvariant()))
                 {
+                    // Check for cloud/offline attributes
+                    var attributes = File.GetAttributes(file);
+                    if (attributes.HasFlag(System.IO.FileAttributes.Offline) ||
+                        attributes.HasFlag(System.IO.FileAttributes.ReparsePoint))
+                    {
+                        continue; // File is likely in cloud storage
+                    }
+
                     searchResults.AddImage(file);
                 }
             }
