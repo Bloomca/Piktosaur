@@ -28,8 +28,16 @@ public sealed partial class ImagePreview : UserControl
     public ImagePreview()
     {
         InitializeComponent();
+        InitializeImage();
 
         AppStateVM.Shared.PropertyChanged += ViewModel_PropertyChanged;
+    }
+
+    private void InitializeImage()
+    {
+        var selectedImagePath = ViewModel.SelectedImagePath;
+
+        if (selectedImagePath != null) AssignImageSource(selectedImagePath);
     }
 
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -42,10 +50,15 @@ public sealed partial class ImagePreview : UserControl
             }
             else
             {
-                var bitmap = new BitmapImage();
-                bitmap.UriSource = new Uri(ViewModel.SelectedImagePath);
-                PreviewImage.Source = bitmap;
-            }   
+                AssignImageSource(ViewModel.SelectedImagePath);
+            }
         }
+    }
+
+    private void AssignImageSource(string imagePath)
+    {
+        var bitmap = new BitmapImage();
+        bitmap.UriSource = new Uri(imagePath);
+        PreviewImage.Source = bitmap;
     }
 }

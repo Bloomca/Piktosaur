@@ -24,9 +24,7 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <views:TitleBar x:Name="CustomTitleBar" Grid.Row="0" Grid.ColumnSpan="2"/>
-        <ScrollViewer Grid.Row="1"  x:Name="MainScrollViewer">
-            <StackPanel x:Name="MainContainer" Orientation="Vertical"/>
-        </ScrollViewer>
+        <views:ImageList Grid.Row="1" />
         <views:ImagePreview Grid.Row="1" Grid.Column="1" />
     </Grid>
 </Window>
