@@ -43,17 +43,42 @@ namespace Piktosaur.Views
 
         private static void OnImageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var control = d as ImageFile;
-            var imageResult = e.NewValue as ImageResult;
+            try
+            {
+                var control = d as ImageFile;
+                var imageResult = e.NewValue as ImageResult;
 
-            if (control == null) return;
+                if (control == null || imageResult?.Thumbnail == null) return;
 
-            control.ThumbnailImage.Source = imageResult?.Thumbnail;
+                control.ThumbnailImage.Source = imageResult.Thumbnail;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"OnImageChanged error: {ex}");
+            }
         }
 
         public void RefreshThumbnail()
         {
-            ThumbnailImage.Source = Image?.Thumbnail;
+            if (Image?.Thumbnail == null) return;
+            ThumbnailImage.Source = Image.Thumbnail;
+        }
+
+        private void ThumbnailImage_Loaded(object sender, RoutedEventArgs e)
+        {
+            var element = sender as FrameworkElement;
+            element.EffectiveViewportChanged += Item_EffectiveViewportChanged;
+        }
+
+        private async void Item_EffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args)
+        {
+            if (args.BringIntoViewDistanceX < 100 && args.BringIntoViewDistanceY < 100)
+            {
+                await Image.GenerateThumbnail();
+                RefreshThumbnail();
+
+                sender.EffectiveViewportChanged -= Item_EffectiveViewportChanged;
+            }
         }
     }
 }
