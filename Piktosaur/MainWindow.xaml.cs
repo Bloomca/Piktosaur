@@ -33,58 +33,6 @@ namespace Piktosaur
         public MainWindow()
         {
             InitializeComponent();
-
-            LoadImages();
-
-            AppStateVM.Shared.PropertyChanged += Shared_PropertyChanged;
-        }
-
-        private void Shared_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(AppStateVM.Shared.SelectedQuery))
-            {
-                LoadImages();
-            }
-        }
-
-        private async void LoadImages()
-        {
-            MainContainer.Children.Clear();
-            var currentQuery = AppStateVM.Shared.SelectedQuery;
-            var result = Search.GetImages(currentQuery.Folders[0]);
-            var images = result.Results;
-            List<Task> thumbnailTasks = [];
-            // pre-generate first 15 image thumbnails
-            foreach (var image in images.Take(15))
-            {
-                thumbnailTasks.Add(image.GenerateThumbnail());
-            }
-
-            if (images.Count > 0)
-            {
-                AppStateVM.Shared.SelectImage(images[0].Path);
-            }
-
-            // 1. Render Progress bar
-
-            var ProgressElement = new ProgressBar {
-                IsIndeterminate=true,
-                ShowError=false,
-                ShowPaused=false
-            };
-
-            ContainerElement.Children.Add(ProgressElement);
-
-            await Task.WhenAll(thumbnailTasks);
-
-            ContainerElement.Children.Remove(ProgressElement);
-
-            foreach (var image in images)
-            {
-                var ImageComponent = new ImageFile(image);
-
-                MainContainer.Children.Add(ImageComponent);
-            }
         }
     }
 }

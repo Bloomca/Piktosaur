@@ -9,8 +9,6 @@
     mc:Ignorable="d">
 
     <Grid Margin="4">
-        <Button Background="Transparent" BorderThickness="0" Padding="0" Click="Button_Click">
-            <Image Width="200" Source="{x:Bind Image.Thumbnail}" Margin="8" />
-        </Button>
+        <Image Width="200" Source="{x:Bind Image.Thumbnail, Mode=OneWay}" Margin="8" />
     </Grid>
 </UserControl>

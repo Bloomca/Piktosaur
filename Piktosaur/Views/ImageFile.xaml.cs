@@ -23,17 +23,22 @@ namespace Piktosaur.Views
 {
     public sealed partial class ImageFile : UserControl
     {
-        private ImageResult _imageResult;
-        public ImageResult Image { get => _imageResult; }
-        public ImageFile(ImageResult imageResult)
+        public static readonly DependencyProperty ImageProperty =
+            DependencyProperty.Register(
+                nameof(Image),
+                typeof(ImageResult),
+                typeof(ImageFile),
+                new PropertyMetadata(null));
+
+        public ImageResult Image
         {
-            InitializeComponent();
-            _imageResult = imageResult;
+            get => (ImageResult)GetValue(ImageProperty);
+            set => SetValue(ImageProperty, value);
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        public ImageFile()
         {
-            AppStateVM.Shared.SelectImage(Image.Path);
+            InitializeComponent();
         }
     }
 }
