@@ -8,12 +8,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Piktosaur.Models"
     xmlns:system="using:System"
+    xmlns:converters="using:Piktosaur.Converters"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <CollectionViewSource x:Name="ImagesByFolder" 
                           IsSourceGrouped="True" 
                           ItemsPath="Images"/>
+        <converters:BoolToAngleConverter x:Key="BoolToAngleConverter" />
     </UserControl.Resources>
 
     <Grid x:Name="ContainerElement">
@@ -39,7 +41,39 @@
                 <GroupStyle>
                     <GroupStyle.HeaderTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Name}" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Button VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        Grid.Column="0"
+                                        Width="32"
+                                        Height="32"
+                                        Padding="0"
+                                        Margin="0, 0, 4, 0"
+                                        Click="ToggleGroupClick">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderBrush" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </Style>
+                                    </Button.Style>
+                                    <FontIcon Glyph="&#xE70D;"
+                                              FontSize="12"
+                                              RenderTransformOrigin="0.5,0.5">
+                                        <FontIcon.RenderTransform>
+                                            <RotateTransform
+                                                Angle="{Binding Expanded, 
+                                                        Converter={StaticResource BoolToAngleConverter}}"/>
+                                        </FontIcon.RenderTransform>
+                                    </FontIcon>
+                                </Button>
+                                <TextBlock VerticalAlignment="Center" Grid.Column="1" Text="{Binding Name}" />
+                            </Grid>
                         </DataTemplate>
                     </GroupStyle.HeaderTemplate>
                 </GroupStyle>

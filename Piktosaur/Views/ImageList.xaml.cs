@@ -152,18 +152,13 @@ namespace Piktosaur.Views
                 
             }
         }
-    }
 
-    public class FolderWithImages
-    {
-        public string Name { get; }
-
-        public ObservableCollection<ImageResult> Images { get; }
-
-        public FolderWithImages(string name, IReadOnlyList<ImageResult> images)
+        private void ToggleGroupClick(object sender, RoutedEventArgs e)
         {
-            Name = name;
-            Images = new ObservableCollection<ImageResult>(images);
+            if (sender is not Button button) return;
+            if (button.DataContext is not FolderWithImages group) return;
+
+            group.ToggleExpanded();
         }
     }
 }

@@ -30,16 +30,6 @@ namespace Piktosaur.Services
         }
 
         public static string[] ImageExtensions = [".jpg", ".jpeg", ".png"];
-        public static string GetPicturesFolder()
-        {
-            return Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-        }
-
-        public static string GetDownloadsFolder()
-        {
-            var userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            return Path.Combine(userFolder, "Downloads");
-        }
 
         public static ImagesData GetImages(string path)
         {

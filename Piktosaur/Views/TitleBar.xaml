@@ -11,7 +11,10 @@
     <Grid>
         <DropDownButton HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8">
             <DropDownButton.Content>
-                <TextBlock x:Name="Folder" Text="{x:Bind ViewModel.SelectedQuery.Name,Mode=OneWay}" />
+                <StackPanel Orientation="Horizontal">
+                    <FontIcon Glyph="&#xE838;" Margin="0, 0, 8, 0" />
+                    <TextBlock x:Name="Folder" Text="{x:Bind ViewModel.SelectedQuery.Name,Mode=OneWay}" />
+                </StackPanel>
             </DropDownButton.Content>
             <DropDownButton.Flyout>
                 <MenuFlyout x:Name="MenuElement" Placement="Bottom">

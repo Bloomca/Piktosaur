@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Piktosaur.Models;
 using Piktosaur.Services;
+using Piktosaur.Utils;
 using Windows.Storage;
 
 namespace Piktosaur.ViewModels
@@ -14,8 +15,8 @@ namespace Piktosaur.ViewModels
     public class AppStateVM : BaseViewModel
     {
         public static Query[] DefaultQueries = [
-            new Query("My Pictures", [Search.GetPicturesFolder()]),
-            new Query("Downloads", [Search.GetDownloadsFolder()])
+            new Query("My Pictures", [FileSystem.GetPicturesFolder()]),
+            new Query("Downloads", [FileSystem.GetDownloadsFolder()])
         ];
 
         public static AppStateVM Shared = new AppStateVM();
@@ -60,7 +61,8 @@ namespace Piktosaur.ViewModels
 
         public void AddFolderQuery(StorageFolder folder)
         {
-            var newQuery = new Query(folder.Name, [folder.Path]);
+            var relativePath = FileSystem.GetFormattedFolderName(folder.Path);
+            var newQuery = new Query(relativePath, [folder.Path]);
             Queries.Add(newQuery);
 
             SelectQuery(newQuery);
