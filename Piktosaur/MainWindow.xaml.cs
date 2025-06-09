@@ -29,10 +29,33 @@ namespace Piktosaur
     /// </summary>
     public sealed partial class MainWindow : Window
     {
+        private ImageList? imageList;
         public Piktosaur.Views.TitleBar TitleBar => CustomTitleBar;
         public MainWindow()
         {
             InitializeComponent();
+            ReloadImagesList();
+
+            AppStateVM.Shared.PropertyChanged += Shared_PropertyChanged;
+        }
+
+        private void Shared_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AppStateVM.Shared.SelectedQuery))
+            {
+                ReloadImagesList();
+            }
+        }
+
+        private void ReloadImagesList()
+        {
+            if (imageList != null) {
+                ContainerElement.Children.Remove(imageList);
+            }
+            var ImagesListComponent = new ImageList();
+            imageList = ImagesListComponent;
+            Grid.SetRow(ImagesListComponent, 1);
+            ContainerElement.Children.Add(ImagesListComponent);
         }
     }
 }
