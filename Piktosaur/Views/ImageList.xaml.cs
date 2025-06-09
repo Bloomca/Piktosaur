@@ -33,19 +33,9 @@ namespace Piktosaur.Views
             InitializeComponent();
 
             LoadImages();
-
-            AppStateVM.Shared.PropertyChanged += Shared_PropertyChanged;
         }
 
-        private void Shared_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(AppStateVM.Shared.SelectedQuery))
-            {
-                LoadImages();
-            }
-        }
-
-        private void LoadImages()
+        private async void LoadImages()
         {
             try
             {
@@ -54,10 +44,29 @@ namespace Piktosaur.Views
                 var result = Search.GetImages(currentQuery.Folders[0]);
                 var images = result.Results;
 
+                List<Task> thumbnailTasks = [];
+                foreach (var image in images.Take(10))
+                {
+                    thumbnailTasks.Add(image.GenerateThumbnail());
+                }
+
                 if (images.Count > 0)
                 {
                     AppStateVM.Shared.SelectImage(images[0].Path);
                 }
+
+                var ProgressElement = new ProgressBar
+                {
+                    IsIndeterminate = true,
+                    ShowError = false,
+                    ShowPaused = false
+                };
+
+                ContainerElement.Children.Add(ProgressElement);
+
+                await Task.WhenAll(thumbnailTasks);
+
+                ContainerElement.Children.Remove(ProgressElement);
 
                 var folderName = System.IO.Path.GetFileName(result.DirectoryPath);
                 var folderWithImages = new FolderWithImages(folderName, images);
@@ -67,6 +76,11 @@ namespace Piktosaur.Views
                 HandleSubdirectories(result.SubdirectoriesImagesData, folders);
 
                 ImagesByFolder.Source = folders;
+
+                // small delay to guarantee that grid view will be properly focused
+                // and the keyboard navigation will work immediately
+                await Task.Delay(50);
+                this.DispatcherQueue.TryEnqueue(() => GridViewElement.Focus(FocusState.Keyboard));
             }
             catch (Exception ex)
             {

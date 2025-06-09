@@ -16,30 +16,40 @@
                           ItemsPath="Images"/>
     </UserControl.Resources>
 
-    <GridView ItemsSource="{Binding Source={StaticResource ImagesByFolder}}"
-              SelectionChanged="GridView_SelectionChanged"
-              SelectionMode="Single"
-              IsItemClickEnabled="False">
-        <GridView.ItemsPanel>
-            <ItemsPanelTemplate>
-                <StackPanel Orientation="Vertical" />
-            </ItemsPanelTemplate>
-        </GridView.ItemsPanel>
+    <Grid x:Name="ContainerElement">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <GridView.GroupStyle>
-            <GroupStyle>
-                <GroupStyle.HeaderTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Name}" />
-                    </DataTemplate>
-                </GroupStyle.HeaderTemplate>
-            </GroupStyle>
-        </GridView.GroupStyle>
+        <GridView Grid.Row="1"
+                  ItemsSource="{Binding Source={StaticResource ImagesByFolder}}"
+                  SelectionChanged="GridView_SelectionChanged"
+                  SelectionMode="Single"
+                  IsItemClickEnabled="False"
+                  x:Name="GridViewElement"
+                  Margin="8,0,0,0">
+            <GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>
 
-        <GridView.ItemTemplate>
-            <DataTemplate x:DataType="models:ImageResult">
-                <local:ImageFile Image="{x:Bind}" />
-            </DataTemplate>
-        </GridView.ItemTemplate>
-    </GridView>
+            <GridView.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </GridView.GroupStyle>
+
+            <GridView.ItemTemplate>
+                <DataTemplate x:DataType="models:ImageResult">
+                    <local:ImageFile Image="{x:Bind}" />
+                </DataTemplate>
+            </GridView.ItemTemplate>
+        </GridView>
+    </Grid>
 </UserControl>
