@@ -39,13 +39,19 @@ namespace Piktosaur.Views
             foreach (var query in ViewModel.Queries)
             {
                 var savedQuery = query;
-                var flyoutItem = new MenuFlyoutItem { Text = query.Name };
+                var flyoutItem = new MenuFlyoutItem {
+                    Text = query.Name,
+                    Icon = new FontIcon { Glyph = "\uE8D5" }
+                };
                 flyoutItem.Click += (sender, e) => ViewModel.SelectQuery(savedQuery);
 
                 MenuElement.Items.Add(flyoutItem);
             }
 
-            var openFolderFlyoutItem = new MenuFlyoutItem { Text = "Open folder" };
+            var openFolderFlyoutItem = new MenuFlyoutItem {
+                Text = "Open folder",
+                Icon = new FontIcon { Glyph = "\uE8F4" }
+            };
             openFolderFlyoutItem.Click += (sender, e) => HandleOpenFolderClick();
 
             MenuElement.Items.Add(openFolderFlyoutItem);
