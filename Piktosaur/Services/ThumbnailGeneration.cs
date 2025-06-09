@@ -32,9 +32,8 @@ namespace Piktosaur.Services
 
         public ThumbnailGeneration()
         {
-            var semaphoreCount = Environment.ProcessorCount >= 6 ? 3 : 2;
-            osThumbnailSemaphore = new SemaphoreSlim(semaphoreCount, semaphoreCount);
-            fallbackThumbnailSemaphore = new SemaphoreSlim(semaphoreCount, semaphoreCount);
+            osThumbnailSemaphore = new SemaphoreSlim(1, 1);
+            fallbackThumbnailSemaphore = new SemaphoreSlim(Environment.ProcessorCount, Environment.ProcessorCount);
         }
 
         public async Task<BitmapSource?> GenerateThumbnail(string path)
@@ -48,25 +47,7 @@ namespace Piktosaur.Services
                 if (thumbnailsGenerating.ContainsKey(path)) return null;
                 thumbnailsGenerating.TryAdd(path, true);
 
-                StorageItemThumbnail? thumbnail = await GenerateOSThumbnailWithRetries(path);
-
-                thumbnailsGenerating.Remove(path, out bool _result);
-
-                if (thumbnail == null)
-                {
-                    Debug.WriteLine("Could not generate the bitmap image");
-                    return null;
-                }
-                else
-                {
-                    Debug.WriteLine("Generating bitmap image");
-                    BitmapImage bitmapImage = new BitmapImage();
-                    await bitmapImage.SetSourceAsync(thumbnail);
-                    thumbnail.Dispose();
-
-                    Debug.WriteLine("Generated bitmap image, releasing semaphore");
-                                        return bitmapImage;
-                }
+                return await CreateManualThumbnail(path);
             }
             catch (Exception ex)
             {
@@ -75,7 +56,28 @@ namespace Piktosaur.Services
             }
             finally
             {
+                thumbnailsGenerating.Remove(path, out bool _result);
                 osThumbnailSemaphore.Release();
+            }
+        }
+
+        private async Task<BitmapSource?> GenerateOSThumbnail(string path)
+        {
+            StorageItemThumbnail? thumbnail = await GenerateOSThumbnailWithRetries(path);
+
+            if (thumbnail == null)
+            {
+                Debug.WriteLine("Could not generate the bitmap image");
+                return null;
+            }
+            else
+            {
+                Debug.WriteLine("Generating bitmap image");
+                BitmapImage bitmapImage = new BitmapImage();
+                await bitmapImage.SetSourceAsync(thumbnail);
+                thumbnail.Dispose();
+
+                return bitmapImage;
             }
         }
 
@@ -88,7 +90,7 @@ namespace Piktosaur.Services
         {
             try
             {
-                var result = await GenerateOSThumbnail(path);
+                var result = await GenerateOSThumbnailImpl(path);
 
                 if (result != null)
                 {
@@ -110,14 +112,13 @@ namespace Piktosaur.Services
             return await GenerateOSThumbnailWithRetries(path, currentRetry + 1, maxRetries);
         }
 
-        private async Task<StorageItemThumbnail?> GenerateOSThumbnail(string path)
+        private async Task<StorageItemThumbnail?> GenerateOSThumbnailImpl(string path)
         {
             try
             {
                 await Throttler.ThrottleWinRT();
                 StorageFile file = await StorageFile.GetFileFromPathAsync(path);
 
-                Debug.WriteLine("Getting OS Thumbnail");
                 var thumbnailTask = file.GetThumbnailAsync(
                     ThumbnailMode.SingleItem,
                     200,

@@ -50,6 +50,7 @@ namespace Piktosaur.Views
 
                 if (control == null || imageResult?.Thumbnail == null) return;
 
+                control.EffectiveViewportChanged -= control.Item_EffectiveViewportChanged;
                 control.ThumbnailImage.Source = imageResult.Thumbnail;
             }
             catch (Exception ex)
@@ -74,10 +75,9 @@ namespace Piktosaur.Views
         {
             if (args.BringIntoViewDistanceX < 100 && args.BringIntoViewDistanceY < 100)
             {
+                sender.EffectiveViewportChanged -= Item_EffectiveViewportChanged;
                 await Image.GenerateThumbnail();
                 RefreshThumbnail();
-
-                sender.EffectiveViewportChanged -= Item_EffectiveViewportChanged;
             }
         }
     }
