@@ -27,12 +27,15 @@ namespace Piktosaur.Models
             Path = path;
         }
 
-        public async Task GenerateThumbnail(CancellationToken cancellationToken)
+        public async Task<Boolean> GenerateThumbnail(CancellationToken cancellationToken)
         {
-            if (Thumbnail != null || isDisposed || cancellationToken.IsCancellationRequested) return;
+            if (Thumbnail != null || isDisposed || cancellationToken.IsCancellationRequested) return false;
             var thumbnail = await ThumbnailGeneration.Shared.GenerateThumbnail(Path, cancellationToken);
-            if (isDisposed || cancellationToken.IsCancellationRequested) return;
+            cancellationToken.ThrowIfCancellationRequested();
+            if (isDisposed) return false;
             Thumbnail = thumbnail;
+
+            return true;
         }
 
         public void Dispose()

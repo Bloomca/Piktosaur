@@ -24,6 +24,8 @@ namespace Piktosaur.Views
 {
     public sealed partial class ImageFile : UserControl
     {
+        public bool _unloaded = false;
+
         public static readonly DependencyProperty ImageProperty =
             DependencyProperty.Register(
                 nameof(Image),
@@ -54,6 +56,7 @@ namespace Piktosaur.Views
                 if (control == null || imageResult?.Thumbnail == null) return;
 
                 control.EffectiveViewportChanged -= control.Item_EffectiveViewportChanged;
+                if (control._unloaded == true) return;
                 control.ThumbnailImage.Source = imageResult.Thumbnail;
             }
             catch (Exception ex)
@@ -62,30 +65,44 @@ namespace Piktosaur.Views
             }
         }
 
-        public void RefreshThumbnail()
+        private void RefreshThumbnail()
         {
+            if (_unloaded == true) return;
             if (cancellationTokenSource != null && cancellationTokenSource.Token.IsCancellationRequested) return;
-            if (Image?.Thumbnail == null) return;
+            if (Image?.Thumbnail == null)
+            {
+                // if we are here, it means that thumbnail generation didn't succeed
+                // so we need to "reset" the state so it can be fetched again
+                cancellationTokenSource = null;
+                this.EffectiveViewportChanged += Item_EffectiveViewportChanged;
+                return;
+            }
             ThumbnailImage.Source = Image.Thumbnail;
         }
 
         private void ThumbnailImage_Loaded(object sender, RoutedEventArgs e)
         {
-            if (sender is not FrameworkElement element) return;
-            element.EffectiveViewportChanged += Item_EffectiveViewportChanged;
+            this.EffectiveViewportChanged += Item_EffectiveViewportChanged;
         }
 
         private async void Item_EffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args)
         {
+            if (Image == null) return;
+            if (_unloaded == true || Image.Thumbnail != null)
+            {
+                this.EffectiveViewportChanged -= Item_EffectiveViewportChanged;
+                return;
+            }
+            if (cancellationTokenSource != null) return;
             if (args.BringIntoViewDistanceX < 100 && args.BringIntoViewDistanceY < 100)
             {
-                sender.EffectiveViewportChanged -= Item_EffectiveViewportChanged;
+                this.EffectiveViewportChanged -= Item_EffectiveViewportChanged;
                 cancellationTokenSource = new CancellationTokenSource();
                 try
                 {
                     await Image.GenerateThumbnail(cancellationTokenSource.Token);
 
-                    if (!cancellationTokenSource.Token.IsCancellationRequested)
+                    if (!cancellationTokenSource.Token.IsCancellationRequested && !_unloaded)
                     {
                         RefreshThumbnail();
                     }
@@ -94,13 +111,19 @@ namespace Piktosaur.Views
                 {
                     // do nothing
                 }
+                catch
+                {
+                    System.Diagnostics.Debug.WriteLine("Failed to generate thumbnail");
+                }
             }
         }
 
         private void ThumbnailImage_Unloaded(object sender, RoutedEventArgs e)
         {
+            _unloaded = true;
             cancellationTokenSource?.Cancel();
-            cancellationTokenSource?.Dispose();
+            //cancellationTokenSource?.Dispose();
+            this.EffectiveViewportChanged -= Item_EffectiveViewportChanged;
         }
     }
 }

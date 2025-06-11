@@ -6,13 +6,13 @@
     xmlns:local="using:Piktosaur.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="ThumbnailImage_Loaded"
+    Unloaded="ThumbnailImage_Unloaded"
     mc:Ignorable="d">
 
     <Grid Margin="4">
         <Image Width="200"
                x:Name="ThumbnailImage"
-               Margin="8"
-               Loaded="ThumbnailImage_Loaded"
-               Unloaded="ThumbnailImage_Unloaded" />
+               Margin="8" />
     </Grid>
 </UserControl>

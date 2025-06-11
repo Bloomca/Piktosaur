@@ -61,8 +61,6 @@ namespace Piktosaur.ViewModels
 
             isDisposed = true;
 
-            Images.Clear();
-
             foreach (var image in _images)
             {
                 image?.Dispose();
