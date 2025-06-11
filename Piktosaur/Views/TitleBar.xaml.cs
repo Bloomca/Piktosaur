@@ -41,6 +41,14 @@ namespace Piktosaur.Views
             SetFlyoutItems();
         }
 
+        /// <summary>
+        /// It is not possible to use <DataTemplate> component
+        /// for FlyoutItems, so we assign them manually.
+        /// 
+        /// This is not the most performant solution, as it clears
+        /// them all instead of reacting to individual changes of
+        /// the collection, but it should be negligible here.
+        /// </summary>
         private void SetFlyoutItems()
         {
             MenuElement.Items.Clear();

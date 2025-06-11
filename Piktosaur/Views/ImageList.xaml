@@ -34,6 +34,9 @@
                   Margin="8,0,0,0">
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
+                    <!-- Intentionally turning off virtualization -->
+                    <!-- Dynamically creating thumbnails creates weird artifacts -->
+                    <!-- since virtualization reuses components -->
                     <StackPanel Orientation="Vertical" />
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>

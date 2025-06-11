@@ -13,22 +13,17 @@ using Piktosaur.Models;
 
 namespace Piktosaur.Services
 {
+    /// <summary>
+    /// Implements search of all images within a passed directory path.
+    /// The important part here is that the search is recursive, and even
+    /// a folder has no images, it will keep going until it fully exhausts
+    /// the path.
+    /// 
+    /// This architecture allows to render _all_ photos inline, without
+    /// the requirement on clicking on individual folders multiple times.
+    /// </summary>
     public class Search
     {
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        static extern bool GetFileAttributesEx(string lpFileName, int fInfoLevelId, out WIN32_FILE_ATTRIBUTE_DATA lpFileInformation);
-
-        [StructLayout(LayoutKind.Sequential)]
-        struct WIN32_FILE_ATTRIBUTE_DATA
-        {
-            public System.IO.FileAttributes dwFileAttributes;
-            public long ftCreationTime;
-            public long ftLastAccessTime;
-            public long ftLastWriteTime;
-            public uint nFileSizeHigh;
-            public uint nFileSizeLow;
-        }
-
         public static string[] ImageExtensions = [".jpg", ".jpeg", ".png"];
 
         public static ImagesData GetImages(string path)

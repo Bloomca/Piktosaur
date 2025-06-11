@@ -30,7 +30,7 @@ public sealed partial class ImagePreview : UserControl
         InitializeComponent();
         InitializeImage();
 
-        AppStateVM.Shared.PropertyChanged += ViewModel_PropertyChanged;
+        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
     }
 
     private void InitializeImage()

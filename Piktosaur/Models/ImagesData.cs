@@ -10,6 +10,9 @@ namespace Piktosaur.Models
     /// This class represents the Images Data ready to be shown in the UI.
     /// It is pretty similar to `SearchResults`, but it flattens empty
     /// directories.
+    /// 
+    /// It still keeps references recursively, the flattened data is kept
+    /// in `FolderWithImages` view model.
     /// </summary>
     public class ImagesData
     {
