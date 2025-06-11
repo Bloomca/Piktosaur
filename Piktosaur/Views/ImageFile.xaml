@@ -9,6 +9,10 @@
     mc:Ignorable="d">
 
     <Grid Margin="4">
-        <Image Width="200" x:Name="ThumbnailImage" Margin="8" Loaded="ThumbnailImage_Loaded" />
+        <Image Width="200"
+               x:Name="ThumbnailImage"
+               Margin="8"
+               Loaded="ThumbnailImage_Loaded"
+               Unloaded="ThumbnailImage_Unloaded" />
     </Grid>
 </UserControl>

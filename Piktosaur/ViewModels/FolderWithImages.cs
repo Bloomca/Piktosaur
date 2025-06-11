@@ -8,9 +8,11 @@ using Piktosaur.Models;
 
 namespace Piktosaur.ViewModels
 {
-    public class FolderWithImages : BaseViewModel
+    public class FolderWithImages : BaseViewModel, IDisposable
     {
         public string Name { get; }
+
+        private bool isDisposed = false;
 
         private readonly IReadOnlyList<ImageResult> _images;
 
@@ -50,6 +52,20 @@ namespace Piktosaur.ViewModels
                 {
                     Images.Add(image);
                 }
+            }
+        }
+
+        public void Dispose()
+        {
+            if (isDisposed) return;
+
+            isDisposed = true;
+
+            Images.Clear();
+
+            foreach (var image in _images)
+            {
+                image?.Dispose();
             }
         }
     }

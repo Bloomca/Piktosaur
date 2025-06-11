@@ -36,18 +36,22 @@ namespace Piktosaur.Services
             fallbackThumbnailSemaphore = new SemaphoreSlim(Environment.ProcessorCount, Environment.ProcessorCount);
         }
 
-        public async Task<BitmapSource?> GenerateThumbnail(string path)
+        public async Task<BitmapSource?> GenerateThumbnail(string path, CancellationToken cancellationToken)
         {
             if (thumbnailsGenerating.ContainsKey(path)) return null;
 
-            await osThumbnailSemaphore.WaitAsync();
+            await osThumbnailSemaphore.WaitAsync(cancellationToken);
 
             try
             {
                 if (thumbnailsGenerating.ContainsKey(path)) return null;
                 thumbnailsGenerating.TryAdd(path, true);
 
-                return await CreateManualThumbnail(path);
+                return await CreateManualThumbnail(path, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -165,47 +169,54 @@ namespace Piktosaur.Services
             return null;
         }
 
-        private async Task<BitmapSource> CreateManualThumbnail(string path)
+        private async Task<BitmapSource> CreateManualThumbnail(string path, CancellationToken cancellationToken)
         {
-            await fallbackThumbnailSemaphore.WaitAsync();
-            
-            var (thumbnailData, ratio) = await Task.Run(async () =>
+            await fallbackThumbnailSemaphore.WaitAsync(cancellationToken);
+
+            try
             {
-                var file = await StorageFile.GetFileFromPathAsync(path);
-                var properties = await file.Properties.GetImagePropertiesAsync();
-                double ratio = (double)properties.Width / properties.Height;
-
-                using var stream = await file.OpenReadAsync();
-
-                var decoder = await BitmapDecoder.CreateAsync(stream);
-
-                var transform = new BitmapTransform
+                var (thumbnailData, ratio) = await Task.Run(async () =>
                 {
-                    ScaledWidth = 200,
-                    ScaledHeight = (uint)(200 / ratio),
-                    InterpolationMode = BitmapInterpolationMode.Fant
-                };
+                    var file = await StorageFile.GetFileFromPathAsync(path);
+                    var properties = await file.Properties.GetImagePropertiesAsync();
+                    double ratio = (double)properties.Width / properties.Height;
 
-                var pixelData = await decoder.GetPixelDataAsync(
-                    BitmapPixelFormat.Bgra8,
-                    BitmapAlphaMode.Premultiplied,
-                    transform,
-                    ExifOrientationMode.RespectExifOrientation,
-                    ColorManagementMode.DoNotColorManage
-                );
+                    using var stream = await file.OpenReadAsync();
 
-                return (pixelData.DetachPixelData(), ratio);
-            });
+                    var decoder = await BitmapDecoder.CreateAsync(stream);
 
-            var writeableBitmap = new WriteableBitmap(200, (int)(200 / ratio));
-            using (var pixelStream = writeableBitmap.PixelBuffer.AsStream())
-            {
-                await pixelStream.WriteAsync(thumbnailData, 0, thumbnailData.Length);
+                    var transform = new BitmapTransform
+                    {
+                        ScaledWidth = 200,
+                        ScaledHeight = (uint)(200 / ratio),
+                        InterpolationMode = BitmapInterpolationMode.Fant
+                    };
+
+                    var pixelData = await decoder.GetPixelDataAsync(
+                        BitmapPixelFormat.Bgra8,
+                        BitmapAlphaMode.Premultiplied,
+                        transform,
+                        ExifOrientationMode.RespectExifOrientation,
+                        ColorManagementMode.DoNotColorManage
+                    );
+
+                    return (pixelData.DetachPixelData(), ratio);
+                });
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var writeableBitmap = new WriteableBitmap(200, (int)(200 / ratio));
+                using (var pixelStream = writeableBitmap.PixelBuffer.AsStream())
+                {
+                    await pixelStream.WriteAsync(thumbnailData, 0, thumbnailData.Length);
+                }
+
+                return writeableBitmap;
             }
-
-            fallbackThumbnailSemaphore.Release();
-
-            return writeableBitmap;
+            finally
+            {
+                fallbackThumbnailSemaphore.Release();
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -10,14 +11,13 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Piktosaur.Models;
+using Piktosaur.ViewModels;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using WinRT.Interop;
-using Windows.Storage.Pickers;
 using Windows.Storage;
-
-using Piktosaur.ViewModels;
-using Piktosaur.Models;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -32,10 +32,18 @@ namespace Piktosaur.Views
             InitializeComponent();
 
             SetFlyoutItems();
+
+            ViewModel.Queries.CollectionChanged += OnQueriesCollectionChanged;
+        }
+
+        private void OnQueriesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            SetFlyoutItems();
         }
 
         private void SetFlyoutItems()
         {
+            MenuElement.Items.Clear();
             foreach (var query in ViewModel.Queries)
             {
                 var savedQuery = query;
