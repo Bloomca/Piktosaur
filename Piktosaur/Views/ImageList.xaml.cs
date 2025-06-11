@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -28,6 +29,8 @@ namespace Piktosaur.Views
 {
     public sealed partial class ImageList : UserControl
     {
+        private CancellationTokenSource? cancellationTokenSource;
+
         public ImageList()
         {
             InitializeComponent();
@@ -45,9 +48,12 @@ namespace Piktosaur.Views
                 var images = result.Results;
 
                 List<Task> thumbnailTasks = [];
+
+                cancellationTokenSource = new CancellationTokenSource();
+
                 foreach (var image in images.Take(10))
                 {
-                    thumbnailTasks.Add(image.GenerateThumbnail());
+                    thumbnailTasks.Add(image.GenerateThumbnail(cancellationTokenSource.Token));
                 }
 
                 if (images.Count > 0)
@@ -66,6 +72,8 @@ namespace Piktosaur.Views
 
                 await Task.WhenAll(thumbnailTasks);
 
+                if (cancellationTokenSource.Token.IsCancellationRequested) { return; }
+
                 ContainerElement.Children.Remove(ProgressElement);
 
                 var folderName = System.IO.Path.GetFileName(result.DirectoryPath);
@@ -80,11 +88,27 @@ namespace Piktosaur.Views
                 // small delay to guarantee that grid view will be properly focused
                 // and the keyboard navigation will work immediately
                 await Task.Delay(50);
-                this.DispatcherQueue.TryEnqueue(() => GridViewElement.Focus(FocusState.Keyboard));
+
+                if (cancellationTokenSource.Token.IsCancellationRequested) { return; }
+
+                this.DispatcherQueue.TryEnqueue(FocusFirstItem);
+            }
+            catch (OperationCanceledException)
+            {
+                // pass, nothing to do in this case
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error during LoadImages: {ex}");
+            }
+        }
+
+        private void FocusFirstItem()
+        {
+            if (GridViewElement.Items.Count > 0)
+            {
+                var firstItem = GridViewElement.ContainerFromIndex(0) as GridViewItem;
+                firstItem?.Focus(FocusState.Keyboard);
             }
         }
 
@@ -112,53 +136,26 @@ namespace Piktosaur.Views
             }
         }
 
-        private async void GridView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
-        {
-            if (args.InRecycleQueue)
-            {
-                // TODO: cleanup
-                return;
-            }
-
-            if (args.Phase == 0)
-            {
-                // for now, do nothing, just register for the next phase
-                args.RegisterUpdateCallback(GridView_ContainerContentChanging);
-                args.Handled = true;
-            }
-
-            if (args.Phase == 1)
-            {
-                if (args.Item is not ImageResult imageItem)
-                {
-                    System.Diagnostics.Trace.WriteLine("Item is not ImageResult");
-                    return;
-                }
-
-                System.Diagnostics.Trace.WriteLine($"Generating thumbnail for: {imageItem.Path}");
-
-                try
-                {
-                    await imageItem.GenerateThumbnail();
-                    System.Diagnostics.Trace.WriteLine($"Thumbnail generated for: {imageItem.Path}");
-                    var imageFile = args.ItemContainer.ContentTemplateRoot as ImageFile;
-                    imageFile?.RefreshThumbnail();
-                    args.Handled = true;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Could not refresh image thumbnail: {ex}");
-                }
-                
-            }
-        }
-
         private void ToggleGroupClick(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
             if (button.DataContext is not FolderWithImages group) return;
 
             group.ToggleExpanded();
+        }
+
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            cancellationTokenSource?.Cancel();
+            if (ImagesByFolder.Source is IEnumerable<FolderWithImages> folders)
+            {
+                foreach (var folder in folders)
+                {
+                    folder?.Dispose();
+                }
+            }
+
+            ImagesByFolder = null;
         }
     }
 }

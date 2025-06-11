@@ -65,6 +65,7 @@ namespace Piktosaur.ViewModels
             var newQuery = new Query(relativePath, [folder.Path]);
             Queries.Add(newQuery);
 
+            SelectedImagePath = null;
             SelectQuery(newQuery);
         }
     }

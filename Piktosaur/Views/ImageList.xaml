@@ -9,6 +9,7 @@
     xmlns:models="using:Piktosaur.Models"
     xmlns:system="using:System"
     xmlns:converters="using:Piktosaur.Converters"
+    Unloaded="UserControl_Unloaded"
     mc:Ignorable="d">
 
     <UserControl.Resources>

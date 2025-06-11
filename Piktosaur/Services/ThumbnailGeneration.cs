@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
@@ -36,18 +37,22 @@ namespace Piktosaur.Services
             fallbackThumbnailSemaphore = new SemaphoreSlim(Environment.ProcessorCount, Environment.ProcessorCount);
         }
 
-        public async Task<BitmapSource?> GenerateThumbnail(string path)
+        public async Task<BitmapSource?> GenerateThumbnail(string path, CancellationToken cancellationToken)
         {
             if (thumbnailsGenerating.ContainsKey(path)) return null;
 
-            await osThumbnailSemaphore.WaitAsync();
+            await osThumbnailSemaphore.WaitAsync(cancellationToken);
 
             try
             {
                 if (thumbnailsGenerating.ContainsKey(path)) return null;
                 thumbnailsGenerating.TryAdd(path, true);
 
-                return await CreateManualThumbnail(path);
+                return await CreateManualThumbnail(path, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -165,47 +170,51 @@ namespace Piktosaur.Services
             return null;
         }
 
-        private async Task<BitmapSource> CreateManualThumbnail(string path)
+        private async Task<BitmapSource> CreateManualThumbnail(string path, CancellationToken cancellationToken)
         {
-            await fallbackThumbnailSemaphore.WaitAsync();
-            
-            var (thumbnailData, ratio) = await Task.Run(async () =>
+            await fallbackThumbnailSemaphore.WaitAsync(cancellationToken);
+
+            try
             {
-                var file = await StorageFile.GetFileFromPathAsync(path);
-                var properties = await file.Properties.GetImagePropertiesAsync();
-                double ratio = (double)properties.Width / properties.Height;
-
-                using var stream = await file.OpenReadAsync();
-
-                var decoder = await BitmapDecoder.CreateAsync(stream);
-
-                var transform = new BitmapTransform
+                var (thumbnailData, ratio) = await Task.Run(async () =>
                 {
-                    ScaledWidth = 200,
-                    ScaledHeight = (uint)(200 / ratio),
-                    InterpolationMode = BitmapInterpolationMode.Fant
-                };
+                    using var fileStream = System.IO.File.OpenRead(path);
+                    using var randomAccessStream = fileStream.AsRandomAccessStream();
+                    var decoder = await BitmapDecoder.CreateAsync(randomAccessStream);
+                    double ratio = (double)decoder.PixelWidth / decoder.PixelHeight;
 
-                var pixelData = await decoder.GetPixelDataAsync(
-                    BitmapPixelFormat.Bgra8,
-                    BitmapAlphaMode.Premultiplied,
-                    transform,
-                    ExifOrientationMode.RespectExifOrientation,
-                    ColorManagementMode.DoNotColorManage
-                );
+                    var transform = new BitmapTransform
+                    {
+                        ScaledWidth = 200,
+                        ScaledHeight = (uint)(200 / ratio),
+                        InterpolationMode = BitmapInterpolationMode.Fant
+                    };
 
-                return (pixelData.DetachPixelData(), ratio);
-            });
+                    var pixelData = await decoder.GetPixelDataAsync(
+                        BitmapPixelFormat.Bgra8,
+                        BitmapAlphaMode.Premultiplied,
+                        transform,
+                        ExifOrientationMode.RespectExifOrientation,
+                        ColorManagementMode.DoNotColorManage
+                    );
 
-            var writeableBitmap = new WriteableBitmap(200, (int)(200 / ratio));
-            using (var pixelStream = writeableBitmap.PixelBuffer.AsStream())
-            {
-                await pixelStream.WriteAsync(thumbnailData, 0, thumbnailData.Length);
+                    return (pixelData.DetachPixelData(), ratio);
+                });
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var writeableBitmap = new WriteableBitmap(200, (int)(200 / ratio));
+                using (var pixelStream = writeableBitmap.PixelBuffer.AsStream())
+                {
+                    await pixelStream.WriteAsync(thumbnailData, 0, thumbnailData.Length);
+                }
+
+                return writeableBitmap;
             }
-
-            fallbackThumbnailSemaphore.Release();
-
-            return writeableBitmap;
+            finally
+            {
+                fallbackThumbnailSemaphore.Release();
+            }
         }
     }
 }

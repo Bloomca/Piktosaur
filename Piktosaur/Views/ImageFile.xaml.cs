@@ -15,6 +15,7 @@ using Windows.Foundation.Collections;
 
 using Piktosaur.Models;
 using Piktosaur.ViewModels;
+using System.Threading;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -35,6 +36,8 @@ namespace Piktosaur.Views
             get => (ImageResult)GetValue(ImageProperty);
             set => SetValue(ImageProperty, value);
         }
+
+        private CancellationTokenSource? cancellationTokenSource;
 
         public ImageFile()
         {
@@ -61,13 +64,14 @@ namespace Piktosaur.Views
 
         public void RefreshThumbnail()
         {
+            if (cancellationTokenSource != null && cancellationTokenSource.Token.IsCancellationRequested) return;
             if (Image?.Thumbnail == null) return;
             ThumbnailImage.Source = Image.Thumbnail;
         }
 
         private void ThumbnailImage_Loaded(object sender, RoutedEventArgs e)
         {
-            var element = sender as FrameworkElement;
+            if (sender is not FrameworkElement element) return;
             element.EffectiveViewportChanged += Item_EffectiveViewportChanged;
         }
 
@@ -76,9 +80,27 @@ namespace Piktosaur.Views
             if (args.BringIntoViewDistanceX < 100 && args.BringIntoViewDistanceY < 100)
             {
                 sender.EffectiveViewportChanged -= Item_EffectiveViewportChanged;
-                await Image.GenerateThumbnail();
-                RefreshThumbnail();
+                cancellationTokenSource = new CancellationTokenSource();
+                try
+                {
+                    await Image.GenerateThumbnail(cancellationTokenSource.Token);
+
+                    if (!cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        RefreshThumbnail();
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // do nothing
+                }
             }
+        }
+
+        private void ThumbnailImage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            cancellationTokenSource?.Cancel();
+            cancellationTokenSource?.Dispose();
         }
     }
 }
