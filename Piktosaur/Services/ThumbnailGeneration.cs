@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
@@ -177,13 +178,10 @@ namespace Piktosaur.Services
             {
                 var (thumbnailData, ratio) = await Task.Run(async () =>
                 {
-                    var file = await StorageFile.GetFileFromPathAsync(path);
-                    var properties = await file.Properties.GetImagePropertiesAsync();
-                    double ratio = (double)properties.Width / properties.Height;
-
-                    using var stream = await file.OpenReadAsync();
-
-                    var decoder = await BitmapDecoder.CreateAsync(stream);
+                    using var fileStream = System.IO.File.OpenRead(path);
+                    using var randomAccessStream = fileStream.AsRandomAccessStream();
+                    var decoder = await BitmapDecoder.CreateAsync(randomAccessStream);
+                    double ratio = (double)decoder.PixelWidth / decoder.PixelHeight;
 
                     var transform = new BitmapTransform
                     {
