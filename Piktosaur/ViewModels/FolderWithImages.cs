@@ -8,6 +8,9 @@ using Piktosaur.Models;
 
 namespace Piktosaur.ViewModels
 {
+    /// <summary>
+    /// This view model is designed to be used as a Source for CollectionViewSource.
+    /// </summary>
     public class FolderWithImages : BaseViewModel, IDisposable
     {
         public string Name { get; }
@@ -40,6 +43,8 @@ namespace Piktosaur.ViewModels
 
             if (!expanded)
             {
+                // From testing, it seems that removing 1 by 1, compared to
+                // Images.Clear() is more performant.
                 // Remove from end to avoid index shifting
                 for (int i = Images.Count - 1; i >= 0; i--)
                 {

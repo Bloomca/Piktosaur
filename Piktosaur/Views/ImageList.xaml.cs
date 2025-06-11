@@ -38,6 +38,7 @@ namespace Piktosaur.Views
             LoadImages();
         }
 
+        // TODO: move this logic to a dedicated VM
         private async void LoadImages()
         {
             try
@@ -56,6 +57,7 @@ namespace Piktosaur.Views
                     thumbnailTasks.Add(image.GenerateThumbnail(cancellationTokenSource.Token));
                 }
 
+                // TODO: find first available image
                 if (images.Count > 0)
                 {
                     AppStateVM.Shared.SelectImage(images[0].Path);
@@ -127,8 +129,8 @@ namespace Piktosaur.Views
 
         private void GridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var gridView = sender as GridView;
-            var selectedItem = gridView?.SelectedItem as ImageResult;
+            if (sender is not GridView gridView) return;
+            if (gridView.SelectedItem is not ImageResult selectedItem) return;
 
             if (selectedItem != null)
             {

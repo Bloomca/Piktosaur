@@ -22,6 +22,10 @@ using System.Threading;
 
 namespace Piktosaur.Views
 {
+    /// <summary>
+    /// This component handles all updates imperatively and uses no binding to XAML file
+    /// in order to keep flexibility to offload images in the future.
+    /// </summary>
     public sealed partial class ImageFile : UserControl
     {
         public bool _unloaded = false;
@@ -85,6 +89,11 @@ namespace Piktosaur.Views
             this.EffectiveViewportChanged += Item_EffectiveViewportChanged;
         }
 
+        /// <summary>
+        /// This function implements virtualization. When the item is close to be shown,
+        /// it requests creating a custom thumbnail. The actual thumbnail request can be
+        /// denied if there are too many requests coming in (usually in case of rapid scroll).
+        /// </summary>
         private async void Item_EffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args)
         {
             if (Image == null) return;
