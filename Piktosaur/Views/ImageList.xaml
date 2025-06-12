@@ -17,6 +17,7 @@
                           IsSourceGrouped="True" 
                           ItemsPath="Images"/>
         <converters:BoolToAngleConverter x:Key="BoolToAngleConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>
 
     <Grid x:Name="ContainerElement">
@@ -24,6 +25,12 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+
+        <ProgressBar Grid.Row="0"
+                     IsIndeterminate="True"
+                     ShowError="False"
+                     ShowPaused="False"
+                     Visibility="{x:Bind VM.Loading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
         <GridView Grid.Row="1"
                   ItemsSource="{Binding Source={StaticResource ImagesByFolder}}"
