@@ -22,9 +22,9 @@ using Windows.Storage.FileProperties;
 
 namespace Piktosaur.Services
 {
-    public class ThumbnailGeneration
+    public class ThumbnailGeneration : IDisposable
     {
-        public static ThumbnailGeneration Shared = new ThumbnailGeneration();
+        private bool isDisposed = false;
 
         private readonly SemaphoreSlim osThumbnailSemaphore;
 
@@ -79,6 +79,15 @@ namespace Piktosaur.Services
             {
                 osThumbnailSemaphore.Release();
             }
+        }
+
+        public void Dispose()
+        {
+            if (isDisposed) return;
+
+            isDisposed = true;
+
+            smartQueue.Dispose();
         }
     }
 }

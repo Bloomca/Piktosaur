@@ -22,15 +22,18 @@ namespace Piktosaur.Models
         private bool isDisposed = false;
         public BitmapSource? Thumbnail { get; private set; }
 
-        public ImageResult(string path)
+        private ThumbnailGeneration thumbnailGeneration;
+
+        public ImageResult(string path, ThumbnailGeneration thumbnailGeneration)
         {
             Path = path;
+            this.thumbnailGeneration = thumbnailGeneration;
         }
 
         public async Task<Boolean> GenerateThumbnail(CancellationToken cancellationToken)
         {
             if (Thumbnail != null || isDisposed || cancellationToken.IsCancellationRequested) return false;
-            var thumbnail = await ThumbnailGeneration.Shared.GenerateThumbnail(Path, cancellationToken);
+            var thumbnail = await thumbnailGeneration.GenerateThumbnail(Path, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (isDisposed) return false;
             Thumbnail = thumbnail;

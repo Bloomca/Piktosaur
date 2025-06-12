@@ -21,7 +21,7 @@ namespace Piktosaur.Utils
     /// testing I determined it has the best UI performance while processing
     /// requests very fast.
     /// </summary>
-    public class SmartQueue
+    public class SmartQueue : IDisposable
     {
         private readonly int MAX_REQUESTS = 15;
         private List<QueueItem> requests = new();
@@ -29,6 +29,8 @@ namespace Piktosaur.Utils
         private ThumbnailGeneration thumbnailGeneration;
 
         private bool isExecuting = false;
+
+        private bool isDisposed = false;
 
         public SmartQueue(ThumbnailGeneration thumbnailGeneration)
         {
@@ -53,7 +55,7 @@ namespace Piktosaur.Utils
 
         public async void ExecuteRequests()
         {
-            if (isExecuting) return;
+            if (isExecuting || isDisposed) return;
 
             isExecuting = true;
 
@@ -67,6 +69,7 @@ namespace Piktosaur.Utils
 
                 try
                 {
+                    newRequest.ct.ThrowIfCancellationRequested();
                     var result = await thumbnailGeneration.CreateManualThumbnail(newRequest.Path, newRequest.ct);
                     newRequest.Tcs.SetResult(result);
                 }
@@ -85,8 +88,10 @@ namespace Piktosaur.Utils
             return requests.Last();
         }
 
-        public void Clear()
+        public void Dispose()
         {
+            if (isDisposed) return;
+            isDisposed = true;
             foreach (var request in requests)
             {
                 request.Tcs.SetResult(null);
