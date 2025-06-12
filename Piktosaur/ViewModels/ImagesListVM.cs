@@ -10,9 +10,11 @@ using Piktosaur.Services;
 
 namespace Piktosaur.ViewModels
 {
-    public class ImagesListVM : BaseViewModel
+    public class ImagesListVM : BaseViewModel, IDisposable
     {
         private AppStateVM appStateVM;
+
+        private ThumbnailGeneration thumbnailGeneration;
 
         private List<FolderWithImages> folders = new();
 
@@ -31,12 +33,13 @@ namespace Piktosaur.ViewModels
         public ImagesListVM(AppStateVM appStateVM)
         {
             this.appStateVM = appStateVM;
+            thumbnailGeneration = new ThumbnailGeneration();
         }
 
         public async Task<List<FolderWithImages>> LoadImages()
         {
             var currentQuery = appStateVM.SelectedQuery;
-            var result = Search.GetImages(currentQuery.Folders[0]);
+            var result = new Search(thumbnailGeneration).GetImages(currentQuery.Folders[0]);
             var images = result.Results;
 
             List<Task> thumbnailTasks = [];
@@ -94,13 +97,15 @@ namespace Piktosaur.ViewModels
             }
         }
 
-        public void ClearFoldersData()
+        public void Dispose()
         {
             cancellationTokenSource?.Cancel();
             foreach (var folder in folders)
             {
                 folder?.Dispose();
             }
+
+            thumbnailGeneration.Dispose();
         }
     }
 }

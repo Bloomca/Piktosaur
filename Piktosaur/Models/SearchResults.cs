@@ -20,9 +20,9 @@ namespace Piktosaur.Models
             Path = path;
         }
 
-        public void AddImage(string path)
+        public void AddImage(string path, ThumbnailGeneration thumbnailGeneration)
         {
-            Images.Add(new ImageResult(path));
+            Images.Add(new ImageResult(path, thumbnailGeneration));
         }
 
         public void AddDirectory(SearchResults directoryResults)

@@ -24,9 +24,16 @@ namespace Piktosaur.Services
     /// </summary>
     public class Search
     {
+        private ThumbnailGeneration thumbnailGeneration;
+
         public static string[] ImageExtensions = [".jpg", ".jpeg", ".png"];
 
-        public static ImagesData GetImages(string path)
+        public Search(ThumbnailGeneration thumbnailGeneration)
+        {
+            this.thumbnailGeneration = thumbnailGeneration;
+        }
+
+        public ImagesData GetImages(string path)
         {
             var results = new SearchResults(path);
             ReadDirectory(path, results);
@@ -34,7 +41,7 @@ namespace Piktosaur.Services
             return ConvertSearchResults(results, null);
         }
 
-        private static void ReadDirectory(string path, SearchResults searchResults)
+        private void ReadDirectory(string path, SearchResults searchResults)
         {
             if (!Directory.Exists(path))
             {
@@ -59,7 +66,7 @@ namespace Piktosaur.Services
                         continue; // File is likely in cloud storage
                     }
 
-                    searchResults.AddImage(file);
+                    searchResults.AddImage(file, thumbnailGeneration);
                 }
             }
 
