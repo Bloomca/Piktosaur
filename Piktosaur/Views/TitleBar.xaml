@@ -9,6 +9,7 @@
     mc:Ignorable="d">
 
     <Grid>
+        <TextBlock Text="Piktosaur" VerticalAlignment="Top" Margin="16,8,0,0" />
         <DropDownButton HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8">
             <DropDownButton.Content>
                 <StackPanel Orientation="Horizontal">
@@ -17,9 +18,7 @@
                 </StackPanel>
             </DropDownButton.Content>
             <DropDownButton.Flyout>
-                <MenuFlyout x:Name="MenuElement" Placement="Bottom">
-                    
-                </MenuFlyout>
+                <MenuFlyout x:Name="MenuElement" Placement="Bottom" />
             </DropDownButton.Flyout>
         </DropDownButton>
     </Grid>
