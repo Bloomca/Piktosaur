@@ -29,7 +29,7 @@ namespace Piktosaur.Views
 {
     public sealed partial class ImageList : UserControl
     {
-        private CancellationTokenSource? cancellationTokenSource;
+        private readonly ImagesListVM VM = new ImagesListVM(AppStateVM.Shared);
 
         public ImageList()
         {
@@ -38,61 +38,16 @@ namespace Piktosaur.Views
             LoadImages();
         }
 
-        // TODO: move this logic to a dedicated VM
         private async void LoadImages()
         {
             try
             {
-                var folders = new List<FolderWithImages>();
-                var currentQuery = AppStateVM.Shared.SelectedQuery;
-                var result = Search.GetImages(currentQuery.Folders[0]);
-                var images = result.Results;
-
-                List<Task> thumbnailTasks = [];
-
-                cancellationTokenSource = new CancellationTokenSource();
-
-                foreach (var image in images.Take(10))
-                {
-                    thumbnailTasks.Add(image.GenerateThumbnail(cancellationTokenSource.Token));
-                }
-
-                // TODO: find first available image
-                if (images.Count > 0)
-                {
-                    AppStateVM.Shared.SelectImage(images[0].Path);
-                }
-
-                var ProgressElement = new ProgressBar
-                {
-                    IsIndeterminate = true,
-                    ShowError = false,
-                    ShowPaused = false
-                };
-
-                ContainerElement.Children.Add(ProgressElement);
-
-                await Task.WhenAll(thumbnailTasks);
-
-                if (cancellationTokenSource.Token.IsCancellationRequested) { return; }
-
-                ContainerElement.Children.Remove(ProgressElement);
-
-                var folderName = System.IO.Path.GetFileName(result.DirectoryPath);
-                var folderWithImages = new FolderWithImages(folderName, images);
-
-                folders.Add(folderWithImages);
-
-                HandleSubdirectories(result.SubdirectoriesImagesData, folders);
-
+                var folders = await VM.LoadImages();
                 ImagesByFolder.Source = folders;
 
                 // small delay to guarantee that grid view will be properly focused
                 // and the keyboard navigation will work immediately
                 await Task.Delay(50);
-
-                if (cancellationTokenSource.Token.IsCancellationRequested) { return; }
-
                 this.DispatcherQueue.TryEnqueue(FocusFirstItem);
             }
             catch (OperationCanceledException)
@@ -111,19 +66,6 @@ namespace Piktosaur.Views
             {
                 var firstItem = GridViewElement.ContainerFromIndex(0) as GridViewItem;
                 firstItem?.Focus(FocusState.Keyboard);
-            }
-        }
-
-        private void HandleSubdirectories(List<ImagesData> imagesDataList, List<FolderWithImages> folders)
-        {
-            foreach (var imagesData in imagesDataList)
-            {
-                var folderName = System.IO.Path.GetFileName(imagesData.DirectoryPath);
-                var folderWithImages = new FolderWithImages(folderName, imagesData.Results);
-
-                folders.Add(folderWithImages);
-
-                HandleSubdirectories(imagesData.SubdirectoriesImagesData, folders);
             }
         }
 
@@ -148,16 +90,7 @@ namespace Piktosaur.Views
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            cancellationTokenSource?.Cancel();
-            if (ImagesByFolder.Source is IEnumerable<FolderWithImages> folders)
-            {
-                foreach (var folder in folders)
-                {
-                    folder?.Dispose();
-                }
-            }
-
-            ImagesByFolder = null;
+            VM.ClearFoldersData();
         }
     }
 }
