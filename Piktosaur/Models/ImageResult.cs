@@ -1,26 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Piktosaur.Services;
+using Piktosaur.ViewModels;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
 
-using Piktosaur.Services;
-using System.Threading;
-
 namespace Piktosaur.Models
 {
-    public class ImageResult : IDisposable
+    public class ImageResult : BaseViewModel, IDisposable
     {
         public string Path { get; }
 
         private bool isDisposed = false;
-        public BitmapSource? Thumbnail { get; private set; }
+
+        private BitmapSource? _thumbnail;
+
+        public BitmapSource? Thumbnail
+        {
+            get => _thumbnail;
+            private set => SetProperty(ref _thumbnail, value);
+        }
 
         private ThumbnailGeneration thumbnailGeneration;
 

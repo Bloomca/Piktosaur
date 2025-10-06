@@ -50,7 +50,8 @@ namespace Piktosaur.Services
                 if (thumbnailsGenerating.ContainsKey(path)) return null;
                 thumbnailsGenerating.TryAdd(path, true);
 
-                return await smartQueue.AddRequest(path, cancellationToken);
+                var result = await smartQueue.AddRequest(path, cancellationToken);
+                return result;
             }
             catch (OperationCanceledException)
             {

@@ -22,10 +22,6 @@ using System.Threading;
 
 namespace Piktosaur.Views
 {
-    /// <summary>
-    /// This component handles all updates imperatively and uses no binding to XAML file
-    /// in order to keep flexibility to offload images in the future.
-    /// </summary>
     public sealed partial class ImageFile : UserControl
     {
         public bool _unloaded = false;
@@ -35,7 +31,7 @@ namespace Piktosaur.Views
                 nameof(Image),
                 typeof(ImageResult),
                 typeof(ImageFile),
-                new PropertyMetadata(null, OnImageChanged));
+                new PropertyMetadata(null));
 
         public ImageResult Image
         {
@@ -48,40 +44,6 @@ namespace Piktosaur.Views
         public ImageFile()
         {
             InitializeComponent();
-        }
-
-        private static void OnImageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            try
-            {
-                var control = d as ImageFile;
-                var imageResult = e.NewValue as ImageResult;
-
-                if (control == null || imageResult?.Thumbnail == null) return;
-
-                control.EffectiveViewportChanged -= control.Item_EffectiveViewportChanged;
-                if (control._unloaded == true) return;
-                control.ThumbnailImage.Source = imageResult.Thumbnail;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"OnImageChanged error: {ex}");
-            }
-        }
-
-        private void RefreshThumbnail()
-        {
-            if (_unloaded == true) return;
-            if (cancellationTokenSource != null && cancellationTokenSource.Token.IsCancellationRequested) return;
-            if (Image?.Thumbnail == null)
-            {
-                // if we are here, it means that thumbnail generation didn't succeed
-                // so we need to "reset" the state so it can be fetched again
-                cancellationTokenSource = null;
-                this.EffectiveViewportChanged += Item_EffectiveViewportChanged;
-                return;
-            }
-            ThumbnailImage.Source = Image.Thumbnail;
         }
 
         private void ThumbnailImage_Loaded(object sender, RoutedEventArgs e)
@@ -110,11 +72,6 @@ namespace Piktosaur.Views
                 try
                 {
                     await Image.GenerateThumbnail(cancellationTokenSource.Token);
-
-                    if (!cancellationTokenSource.Token.IsCancellationRequested && !_unloaded)
-                    {
-                        RefreshThumbnail();
-                    }
                 }
                 catch (OperationCanceledException)
                 {

@@ -13,6 +13,7 @@
     <Grid Margin="4">
         <Image Width="200"
                x:Name="ThumbnailImage"
+               Source="{x:Bind Image.Thumbnail, Mode=OneWay}"
                Margin="8" />
     </Grid>
 </UserControl>

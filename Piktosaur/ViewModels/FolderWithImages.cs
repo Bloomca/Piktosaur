@@ -17,7 +17,7 @@ namespace Piktosaur.ViewModels
 
         private bool isDisposed = false;
 
-        private readonly IReadOnlyList<ImageResult> _images;
+        private readonly List<ImageResult> _images = [];
 
         private bool expanded;
 
@@ -27,14 +27,22 @@ namespace Piktosaur.ViewModels
             private set => SetProperty(ref expanded, value);
         }
 
-        public ObservableCollection<ImageResult> Images { get; }
+        public ObservableCollection<ImageResult> Images { get; } = [];
 
-        public FolderWithImages(string name, IReadOnlyList<ImageResult> images, bool isExpanded = true)
+        public FolderWithImages(string name, bool isExpanded = true)
         {
             Name = name;
-            _images = images;
-            Images = isExpanded ? new ObservableCollection<ImageResult>(images) : new ObservableCollection<ImageResult>();
             expanded = isExpanded;
+        }
+
+        public void AddImage(ImageResult image)
+        {
+            _images.Add(image);
+
+            if (expanded)
+            {
+                Images.Add(image);
+            }
         }
 
         public void ToggleExpanded()

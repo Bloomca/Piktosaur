@@ -11,8 +11,6 @@ namespace Piktosaur.Models
     {
         public List<ImageResult> Images { get; private set; } = [];
 
-        public List<SearchResults> Directories { get; private set; } = [];
-
         public string Path { get; }
 
         public SearchResults(string path)
@@ -23,11 +21,6 @@ namespace Piktosaur.Models
         public void AddImage(string path, ThumbnailGeneration thumbnailGeneration)
         {
             Images.Add(new ImageResult(path, thumbnailGeneration));
-        }
-
-        public void AddDirectory(SearchResults directoryResults)
-        {
-            Directories.Add(directoryResults);
         }
     }
 }
