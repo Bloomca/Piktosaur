@@ -6,12 +6,18 @@
     xmlns:local="using:Piktosaur.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:Piktosaur.Converters"
     mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <converters:ThumbnailHeightConverter x:Key="ThumbnailHeightConverter" />
+    </UserControl.Resources>
 
     <Grid Margin="4">
         <Image Width="200"
                x:Name="ThumbnailImage"
                Source="{x:Bind Image.Thumbnail, Mode=OneWay}"
+               Height="{x:Bind Image.Thumbnail, Mode=OneWay, Converter={StaticResource ThumbnailHeightConverter}}"
                Margin="8" />
     </Grid>
 </UserControl>

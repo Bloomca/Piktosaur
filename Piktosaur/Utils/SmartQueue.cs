@@ -23,7 +23,7 @@ namespace Piktosaur.Utils
     /// </summary>
     public class SmartQueue : IDisposable
     {
-        private readonly int MAX_REQUESTS = 25;
+        private readonly int MAX_REQUESTS = 20;
         private List<QueueItem> requests = new();
 
         private ThumbnailGeneration thumbnailGeneration;
