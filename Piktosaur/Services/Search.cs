@@ -10,6 +10,9 @@ using Windows.Storage.FileProperties;
 using System.Runtime.InteropServices;
 
 using Piktosaur.Models;
+using System.Collections.ObjectModel;
+using Piktosaur.ViewModels;
+using Microsoft.UI.Dispatching;
 
 namespace Piktosaur.Services
 {
@@ -26,22 +29,48 @@ namespace Piktosaur.Services
     {
         private ThumbnailGeneration thumbnailGeneration;
 
+        private DispatcherQueue dispatcherQueue;
+
+        private ObservableCollection<FolderWithImages> folders;
+
         public static string[] ImageExtensions = [".jpg", ".jpeg", ".png"];
 
-        public Search(ThumbnailGeneration thumbnailGeneration)
+        public Search(ThumbnailGeneration thumbnailGeneration, ObservableCollection<FolderWithImages> _folders)
         {
             this.thumbnailGeneration = thumbnailGeneration;
+            this.folders = _folders;
+
+            this.dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         }
 
-        public ImagesData GetImages(string path)
+        public void GetImages(string path)
         {
-            var results = new SearchResults(path);
-            ReadDirectory(path, results);
-
-            return ConvertSearchResults(results, null);
+            _ = GetFolderWithImages(path);
         }
 
-        private void ReadDirectory(string path, SearchResults searchResults)
+        private async Task GetFolderWithImages(string path)
+        {
+            var searchResult = new SearchResults(path);
+            var imagesData = new ImagesData(path, searchResult.Images);
+            var folderName = System.IO.Path.GetFileName(path);
+            var folderWithImages = new FolderWithImages(folderName);
+
+            var directories = ReadDirectory(path, folderWithImages);
+
+            dispatcherQueue.TryEnqueue(() =>
+            {
+                folders.Add(folderWithImages);
+            });
+
+            foreach (var directory in directories)
+            {
+                await Task.Run(() => GetFolderWithImages(directory));
+            }
+
+            return;
+        }
+
+        private string[] ReadDirectory(string path, FolderWithImages folder)
         {
             if (!Directory.Exists(path))
             {
@@ -66,43 +95,14 @@ namespace Piktosaur.Services
                         continue; // File is likely in cloud storage
                     }
 
-                    searchResults.AddImage(file, thumbnailGeneration);
+                    dispatcherQueue.TryEnqueue(() =>
+                    {
+                        folder.AddImage(new ImageResult(file, thumbnailGeneration));
+                    });
                 }
             }
 
-            var directories = Directory.GetDirectories(path);
-
-            foreach (var directory in directories)
-            {
-                var directoryResults = new SearchResults(directory);
-                searchResults.AddDirectory(directoryResults);
-                ReadDirectory(directory, directoryResults);
-            }
-        }
-
-        private static ImagesData ConvertSearchResults(SearchResults searchResults, ImagesData? imagesData)
-        {
-            // The top result can have empty images (so we render the top folder correctly)
-            if (imagesData == null)
-            {
-                imagesData = new ImagesData(searchResults.Path, searchResults.Images);
-            }
-
-            foreach (var directoryResult in searchResults.Directories)
-            {
-                if (directoryResult.Images.Count == 0)
-                {
-                    // if there are no images, we are skipping that directory
-                    ConvertSearchResults(directoryResult, imagesData);
-                } else
-                {
-                    var subdirectoryResult = new ImagesData(directoryResult.Path, directoryResult.Images);
-                    ConvertSearchResults(directoryResult, subdirectoryResult);
-                    imagesData.addSubdirectoryImagesData(subdirectoryResult);
-                }
-            }
-
-            return imagesData;
+            return Directory.GetDirectories(path);
         }
     }
 }

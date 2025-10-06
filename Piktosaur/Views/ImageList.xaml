@@ -14,8 +14,9 @@
 
     <UserControl.Resources>
         <CollectionViewSource x:Name="ImagesByFolder" 
-                          IsSourceGrouped="True" 
-                          ItemsPath="Images"/>
+                              Source="{x:Bind Folders}"
+                              IsSourceGrouped="True" 
+                              ItemsPath="Images"/>
         <converters:BoolToAngleConverter x:Key="BoolToAngleConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>

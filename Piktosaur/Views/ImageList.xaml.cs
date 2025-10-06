@@ -29,12 +29,13 @@ namespace Piktosaur.Views
 {
     public sealed partial class ImageList : UserControl
     {
+        public ObservableCollection<FolderWithImages> Folders { get; } = new();
+
         private readonly ImagesListVM VM = new ImagesListVM(AppStateVM.Shared);
 
         public ImageList()
         {
             InitializeComponent();
-
             LoadImages();
         }
 
@@ -42,8 +43,7 @@ namespace Piktosaur.Views
         {
             try
             {
-                var folders = await VM.LoadImages();
-                ImagesByFolder.Source = folders;
+                await VM.LoadImages(Folders);
 
                 // small delay to guarantee that grid view will be properly focused
                 // and the keyboard navigation will work immediately

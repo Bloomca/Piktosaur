@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Piktosaur.Models;
 using Piktosaur.Services;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Piktosaur.ViewModels
 {
@@ -16,9 +18,9 @@ namespace Piktosaur.ViewModels
 
         private ThumbnailGeneration thumbnailGeneration;
 
-        private List<FolderWithImages> folders = new();
-
         private CancellationTokenSource? cancellationTokenSource;
+
+        private ObservableCollection<FolderWithImages> _folders = new();
 
         private bool hasSelectedImage = false;
 
@@ -36,71 +38,59 @@ namespace Piktosaur.ViewModels
             thumbnailGeneration = new ThumbnailGeneration();
         }
 
-        public async Task<List<FolderWithImages>> LoadImages()
+        public async Task LoadImages(ObservableCollection<FolderWithImages> folders)
         {
+            _folders = folders;
+            Loading = true;
+
             var currentQuery = appStateVM.SelectedQuery;
-            var result = new Search(thumbnailGeneration).GetImages(currentQuery.Folders[0]);
-            var images = result.Results;
+            new Search(thumbnailGeneration, folders).GetImages(currentQuery.Folders[0]);
+
+            await LoadThumbnails(folders);
+
+            Loading = false;
+        }
+
+        private async Task LoadThumbnails(ObservableCollection<FolderWithImages> folders)
+        {
+            if (folders.Count == 0) return;
+
+            var folder = folders.First();
+
+            if (folder == null) return;
 
             List<Task> thumbnailTasks = [];
 
             cancellationTokenSource = new CancellationTokenSource();
 
-            foreach (var image in images.Take(10))
+            foreach (var image in folder.Images.Take(10))
             {
                 thumbnailTasks.Add(image.GenerateThumbnail(cancellationTokenSource.Token));
             }
 
-            SelectFirstImage(images);
-
-            Loading = true;
-
-            await Task.WhenAll(thumbnailTasks);
+            var firstImage = folder.Images.First();
+            if (firstImage != null)
+            {
+                SelectFirstImage(firstImage);
+            }
 
             cancellationTokenSource.Token.ThrowIfCancellationRequested();
 
-            Loading = false;
-
-            var folderName = System.IO.Path.GetFileName(result.DirectoryPath);
-            var folderWithImages = new FolderWithImages(folderName, images);
-
-            folders.Add(folderWithImages);
-
-            HandleSubdirectories(result.SubdirectoriesImagesData, folders);
-
-            return folders;
+            await Task.WhenAll(thumbnailTasks);
         }
 
-        private void HandleSubdirectories(List<ImagesData> imagesDataList, List<FolderWithImages> folders)
-        {
-            foreach (var imagesData in imagesDataList)
-            {
-                var folderName = System.IO.Path.GetFileName(imagesData.DirectoryPath);
-                var folderWithImages = new FolderWithImages(folderName, imagesData.Results);
-
-                SelectFirstImage(imagesData.Results);
-
-                folders.Add(folderWithImages);
-
-                HandleSubdirectories(imagesData.SubdirectoriesImagesData, folders);
-            }
-        }
-
-        private void SelectFirstImage(List<ImageResult> images)
+        private void SelectFirstImage(ImageResult image)
         {
             if (hasSelectedImage == true) return;
 
-            if (images.Count > 0)
-            {
-                appStateVM.SelectImage(images[0].Path);
-                hasSelectedImage = true;
-            }
+            appStateVM.SelectImage(image.Path);
+            hasSelectedImage = true;
         }
 
         public void Dispose()
         {
             cancellationTokenSource?.Cancel();
-            foreach (var folder in folders)
+            foreach (var folder in _folders)
             {
                 folder?.Dispose();
             }
