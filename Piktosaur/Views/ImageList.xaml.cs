@@ -91,7 +91,7 @@ namespace Piktosaur.Views
             group.ToggleExpanded();
         }
 
-        private async void GridView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        private void GridView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
             if (args.InRecycleQueue)
             {
@@ -109,7 +109,7 @@ namespace Piktosaur.Views
             if (args.Phase == 1)
             {
                 if (args.Item is not ImageResult imageItem) return;
-                await imageItem.GenerateThumbnail(cancellationTokenSource.Token);
+                _ = imageItem.GenerateThumbnail(cancellationTokenSource.Token);
                 args.Handled = true;
             }
         }
