@@ -57,11 +57,6 @@ namespace Piktosaur.Services
 
             var directories = ReadDirectory(path, folderWithImages);
 
-            dispatcherQueue.TryEnqueue(() =>
-            {
-                folders.Add(folderWithImages);
-            });
-
             foreach (var directory in directories)
             {
                 await Task.Run(() => GetFolderWithImages(directory));
@@ -79,6 +74,8 @@ namespace Piktosaur.Services
 
             var files = Directory.GetFiles(path);
 
+            bool hasImages = false;
+
             foreach (var file in files)
             {
                 var fileInfo = new FileInfo(file);
@@ -95,11 +92,22 @@ namespace Piktosaur.Services
                         continue; // File is likely in cloud storage
                     }
 
+                    hasImages = true;
+
                     dispatcherQueue.TryEnqueue(() =>
                     {
                         folder.AddImage(new ImageResult(file, thumbnailGeneration));
                     });
                 }
+            }
+
+            // only add folder if it has some images
+            if (hasImages)
+            {
+                dispatcherQueue.TryEnqueue(() =>
+                {
+                    folders.Add(folder);
+                });
             }
 
             return Directory.GetDirectories(path);
