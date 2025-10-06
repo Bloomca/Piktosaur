@@ -31,10 +31,13 @@ namespace Piktosaur.Views
     {
         public ObservableCollection<FolderWithImages> Folders { get; } = new();
 
+        private CancellationTokenSource cancellationTokenSource;
+
         private readonly ImagesListVM VM = new ImagesListVM(AppStateVM.Shared);
 
         public ImageList()
         {
+            cancellationTokenSource = new CancellationTokenSource();
             InitializeComponent();
             LoadImages();
         }
@@ -88,8 +91,32 @@ namespace Piktosaur.Views
             group.ToggleExpanded();
         }
 
+        private async void GridView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            if (args.InRecycleQueue)
+            {
+                // TODO: cleanup
+                return;
+            }
+
+            if (args.Phase == 0)
+            {
+                // for now, do nothing, just register for the next phase
+                args.RegisterUpdateCallback(GridView_ContainerContentChanging);
+                args.Handled = true;
+            }
+
+            if (args.Phase == 1)
+            {
+                if (args.Item is not ImageResult imageItem) return;
+                await imageItem.GenerateThumbnail(cancellationTokenSource.Token);
+                args.Handled = true;
+            }
+        }
+
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
+            cancellationTokenSource.Cancel();
             VM.Dispose();
         }
     }

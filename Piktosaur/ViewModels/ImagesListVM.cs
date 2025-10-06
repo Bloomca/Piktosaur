@@ -63,7 +63,7 @@ namespace Piktosaur.ViewModels
 
             cancellationTokenSource = new CancellationTokenSource();
 
-            foreach (var image in folder.Images.Take(10))
+            foreach (var image in folder.Images.Take(25))
             {
                 thumbnailTasks.Add(image.GenerateThumbnail(cancellationTokenSource.Token));
             }
