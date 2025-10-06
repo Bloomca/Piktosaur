@@ -39,57 +39,9 @@ namespace Piktosaur.Views
             set => SetValue(ImageProperty, value);
         }
 
-        private CancellationTokenSource? cancellationTokenSource;
-
         public ImageFile()
         {
             InitializeComponent();
-        }
-
-        private void ThumbnailImage_Loaded(object sender, RoutedEventArgs e)
-        {
-            this.EffectiveViewportChanged += Item_EffectiveViewportChanged;
-        }
-
-        /// <summary>
-        /// This function implements virtualization. When the item is close to be shown,
-        /// it requests creating a custom thumbnail. The actual thumbnail request can be
-        /// denied if there are too many requests coming in (usually in case of rapid scroll).
-        /// </summary>
-        private async void Item_EffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args)
-        {
-            if (Image == null) return;
-            if (_unloaded == true || Image.Thumbnail != null)
-            {
-                this.EffectiveViewportChanged -= Item_EffectiveViewportChanged;
-                return;
-            }
-            if (cancellationTokenSource != null) return;
-            if (args.BringIntoViewDistanceX < 100 && args.BringIntoViewDistanceY < 100)
-            {
-                this.EffectiveViewportChanged -= Item_EffectiveViewportChanged;
-                cancellationTokenSource = new CancellationTokenSource();
-                try
-                {
-                    await Image.GenerateThumbnail(cancellationTokenSource.Token);
-                }
-                catch (OperationCanceledException)
-                {
-                    // do nothing
-                }
-                catch
-                {
-                    System.Diagnostics.Debug.WriteLine("Failed to generate thumbnail");
-                }
-            }
-        }
-
-        private void ThumbnailImage_Unloaded(object sender, RoutedEventArgs e)
-        {
-            _unloaded = true;
-            cancellationTokenSource?.Cancel();
-            //cancellationTokenSource?.Dispose();
-            this.EffectiveViewportChanged -= Item_EffectiveViewportChanged;
         }
     }
 }

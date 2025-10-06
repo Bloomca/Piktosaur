@@ -36,16 +36,15 @@
         <GridView Grid.Row="1"
                   ItemsSource="{Binding Source={StaticResource ImagesByFolder}}"
                   SelectionChanged="GridView_SelectionChanged"
+                  ContainerContentChanging="GridView_ContainerContentChanging"
                   SelectionMode="Single"
                   IsItemClickEnabled="False"
                   x:Name="GridViewElement"
                   Margin="8,0,0,0">
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <!-- Intentionally turning off virtualization -->
-                    <!-- Dynamically creating thumbnails creates weird artifacts -->
-                    <!-- since virtualization reuses components -->
-                    <StackPanel Orientation="Vertical" />
+                    <!-- Crucial to use this component for virtualization -->
+                    <ItemsStackPanel Orientation="Vertical" />
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>
 
