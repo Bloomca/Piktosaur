@@ -36,12 +36,12 @@ namespace Piktosaur.Services
         {
             // the original idea was to enable multiple threads, but from my testing
             // single threading model has the best UI performance
-            osThumbnailSemaphore = new SemaphoreSlim(1, 1);
+            osThumbnailSemaphore = new SemaphoreSlim(4, 4);
 
             smartQueue = new SmartQueue(this);
         }
 
-        public async Task<BitmapSource?> GenerateThumbnail(string path, CancellationToken cancellationToken)
+        public async Task<ImageSource?> GenerateThumbnail(string path, CancellationToken cancellationToken)
         {
             if (thumbnailsGenerating.ContainsKey(path)) return null;
 
@@ -68,18 +68,9 @@ namespace Piktosaur.Services
             }
         }
 
-        public async Task<BitmapSource> CreateManualThumbnail(string path, CancellationToken cancellationToken)
+        public async Task<ImageSource> CreateManualThumbnail(string path, CancellationToken cancellationToken)
         {
-            await osThumbnailSemaphore.WaitAsync(cancellationToken);
-
-            try
-            {
-                return await ManualThumbnailGenerator.CreateManualThumbnail(path, cancellationToken);
-            }
-            finally
-            {
-                osThumbnailSemaphore.Release();
-            }
+            return await ManualThumbnailGenerator.CreateManualThumbnail(path, cancellationToken);
         }
 
         public void Dispose()
