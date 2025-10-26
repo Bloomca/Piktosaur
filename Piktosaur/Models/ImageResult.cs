@@ -23,9 +23,9 @@ namespace Piktosaur.Models
 
         private bool isDisposed = false;
 
-        private BitmapSource? _thumbnail;
+        private ImageSource? _thumbnail;
 
-        public BitmapSource? Thumbnail
+        public ImageSource? Thumbnail
         {
             get => _thumbnail;
             private set => SetProperty(ref _thumbnail, value);

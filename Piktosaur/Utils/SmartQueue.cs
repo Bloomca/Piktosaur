@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Piktosaur.Services;
 
@@ -37,9 +38,9 @@ namespace Piktosaur.Utils
             this.thumbnailGeneration = thumbnailGeneration;
         }
 
-        public Task<BitmapSource?> AddRequest(string path, CancellationToken ct)
+        public Task<ImageSource?> AddRequest(string path, CancellationToken ct)
         {
-            TaskCompletionSource<BitmapSource?> tcs = new();
+            TaskCompletionSource<ImageSource?> tcs = new();
             if (requests.Count > MAX_REQUESTS)
             {
                 var oldestRequest = requests.Last();
@@ -61,31 +62,37 @@ namespace Piktosaur.Utils
 
             // ideally, it would be a recursive call, but tail-call optimization
             // seems to be spotty in JIT
-            while (GetNextRequest() is var newRequest && newRequest != null)
+            while (GetNextRequests() is var newRequests && newRequests.Length > 0)
             {
-                // remove the request first from the data structure,
-                // otherwise it can be processed twice
-                requests.Remove(newRequest);
+                // Remove all items first, so they are not processed twice
+                foreach (var request in newRequests)
+                {
+                    requests.Remove(request);
+                }
 
-                try
+                var tasks = newRequests.Select(async newRequest =>
                 {
-                    newRequest.ct.ThrowIfCancellationRequested();
-                    var result = await thumbnailGeneration.CreateManualThumbnail(newRequest.Path, newRequest.ct);
-                    newRequest.Tcs.SetResult(result);
-                }
-                catch
-                {
-                    newRequest.Tcs.SetResult(null);
-                }
+                    try
+                    {
+                        newRequest.ct.ThrowIfCancellationRequested();
+                        var result = await thumbnailGeneration.CreateManualThumbnail(newRequest.Path, newRequest.ct);
+                        newRequest.Tcs.SetResult(result);
+                    }
+                    catch
+                    {
+                        newRequest.Tcs.SetResult(null);
+                    }
+                });
+
+                await Task.WhenAll(tasks);
             }
 
             isExecuting = false;
         }
 
-        private QueueItem? GetNextRequest()
+        private QueueItem[] GetNextRequests()
         {
-            if (requests.Count == 0) return null;
-            return requests.Last();
+            return requests.TakeLast(4).ToArray();
         }
 
         public void Dispose()
@@ -104,11 +111,11 @@ namespace Piktosaur.Utils
     // probably would be better as a struct
     public class QueueItem
     {
-        public TaskCompletionSource<BitmapSource?> Tcs;
+        public TaskCompletionSource<ImageSource?> Tcs;
         public string Path;
         public CancellationToken ct;
 
-        public QueueItem(TaskCompletionSource<BitmapSource?> tcs, string path, CancellationToken ct)
+        public QueueItem(TaskCompletionSource<ImageSource?> tcs, string path, CancellationToken ct)
         {
             Tcs = tcs;
             Path = path;
