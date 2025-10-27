@@ -45,10 +45,15 @@ namespace Piktosaur.Services
 
         public void GetImages(string path)
         {
-            _ = GetFolderWithImages(path);
+            _ = _GetImages(path);
         }
 
-        private async Task GetFolderWithImages(string path)
+        private async Task _GetImages(string path)
+        {
+              await Task.Run(() => GetFolderWithImages(path));
+        }
+
+        private void GetFolderWithImages(string path)
         {
             var searchResult = new SearchResults(path);
             var imagesData = new ImagesData(path, searchResult.Images);
@@ -59,46 +64,61 @@ namespace Piktosaur.Services
 
             foreach (var directory in directories)
             {
-                await Task.Run(() => GetFolderWithImages(directory));
+                GetFolderWithImages(directory);
             }
 
             return;
         }
 
-        private string[] ReadDirectory(string path, FolderWithImages folder)
+        private IEnumerable<string> ReadDirectory(string path, FolderWithImages folder)
         {
             if (!Directory.Exists(path))
             {
                 throw new DirectoryNotFoundException();
             }
 
-            var files = Directory.GetFiles(path);
+            var files = Directory.EnumerateFiles(path);
 
             bool hasImages = false;
 
-            foreach (var file in files)
+            try
             {
-                var fileInfo = new FileInfo(file);
-
-                if (fileInfo == null || !fileInfo.Exists) { continue; }
-
-                if (ImageExtensions.Contains(fileInfo.Extension.ToLowerInvariant()))
+                foreach (var file in files)
                 {
-                    // Check for cloud/offline attributes
-                    var attributes = File.GetAttributes(file);
-                    if (attributes.HasFlag(System.IO.FileAttributes.Offline) ||
-                        attributes.HasFlag(System.IO.FileAttributes.ReparsePoint))
+                    try
                     {
-                        continue; // File is likely in cloud storage
+                        var fileInfo = new FileInfo(file);
+
+                        if (!fileInfo.Exists) { continue; }
+
+                        if (ImageExtensions.Contains(fileInfo.Extension.ToLowerInvariant()))
+                        {
+                            // Check for cloud/offline attributes
+                            var attributes = fileInfo.Attributes;
+                            if (attributes.HasFlag(System.IO.FileAttributes.Offline) ||
+                                attributes.HasFlag(System.IO.FileAttributes.ReparsePoint))
+                            {
+                                continue; // File is likely in cloud storage
+                            }
+
+                            hasImages = true;
+
+                            dispatcherQueue.TryEnqueue(() =>
+                            {
+                                folder.AddImage(new ImageResult(file, thumbnailGeneration));
+                            });
+                        }
+                    } catch
+                    {
+                        // if for some reason we couldn't get FileInfo, just skip the file
+                        continue;
                     }
-
-                    hasImages = true;
-
-                    dispatcherQueue.TryEnqueue(() =>
-                    {
-                        folder.AddImage(new ImageResult(file, thumbnailGeneration));
-                    });
                 }
+            }
+            catch
+            {
+                // e.g. if the directory cannot be accessed
+                return [];
             }
 
             // only add folder if it has some images
@@ -110,7 +130,7 @@ namespace Piktosaur.Services
                 });
             }
 
-            return Directory.GetDirectories(path);
+            return Directory.EnumerateDirectories(path);
         }
     }
 }

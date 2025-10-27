@@ -35,6 +35,8 @@ namespace Piktosaur.Views
 
         private readonly ImagesListVM VM = new ImagesListVM(AppStateVM.Shared);
 
+        private bool isDisposed = false;
+
         public ImageList()
         {
             cancellationTokenSource = new CancellationTokenSource();
@@ -51,7 +53,7 @@ namespace Piktosaur.Views
                 // small delay to guarantee that grid view will be properly focused
                 // and the keyboard navigation will work immediately
                 await Task.Delay(50);
-                this.DispatcherQueue.TryEnqueue(FocusFirstItem);
+                this.DispatcherQueue.TryEnqueue(async () => await FocusFirstItem());
             }
             catch (OperationCanceledException)
             {
@@ -63,12 +65,23 @@ namespace Piktosaur.Views
             }
         }
 
-        private void FocusFirstItem()
+        private async Task FocusFirstItem()
         {
-            if (GridViewElement.Items.Count > 0)
+            // Retry until container is available
+            for (int i = 0; i < 10; i++)
             {
-                var firstItem = GridViewElement.ContainerFromIndex(0) as GridViewItem;
-                firstItem?.Focus(FocusState.Keyboard);
+                if (isDisposed) { return; }
+                if (GridViewElement.Items.Count > 0)
+                {
+                    var firstItem = GridViewElement.ContainerFromIndex(0) as GridViewItem;
+                    if (firstItem != null)
+                    {
+                        firstItem.Focus(FocusState.Keyboard);
+                        return;
+                    }
+
+                }
+                await Task.Delay(100);
             }
         }
 
@@ -116,8 +129,12 @@ namespace Piktosaur.Views
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            cancellationTokenSource.Cancel();
-            VM.Dispose();
+            if (!isDisposed)
+            {
+                cancellationTokenSource.Cancel();
+                VM.Dispose();
+                isDisposed = true;
+            }
         }
     }
 }

@@ -46,6 +46,10 @@ namespace Piktosaur.ViewModels
             var currentQuery = appStateVM.SelectedQuery;
             new Search(thumbnailGeneration, folders).GetImages(currentQuery.Folders[0]);
 
+            // give it 100ms to load the first folder. This is not guaranteed by any means
+            // but should work most of the time
+            await Task.Delay(100);
+
             await LoadThumbnails(folders);
 
             Loading = false;
