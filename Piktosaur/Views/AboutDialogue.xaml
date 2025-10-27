@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="Piktosaur.Views.AboutDialogue"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Piktosaur.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="About Piktosaur"
+    PrimaryButtonText="OK"
+    DefaultButton="Primary">
+
+    <StackPanel Orientation="Vertical" Spacing="12" MaxWidth="400">
+        <TextBlock TextWrapping="Wrap" Text="This is an application to display all images in a folder. It reads each nested folder recursively, skipping folders with no images in them." />
+        <TextBlock TextWrapping="Wrap" Text="It intentionally does not show any data except the image thumbnails and folder names." />
+        
+        <StackPanel>
+            <TextBlock TextWrapping="Wrap" Text="This is a free application with open source code: " />
+            <HyperlinkButton Content="https://github.com/Bloomca/Piktosaur"
+                             NavigateUri="https://github.com/Bloomca/Piktosaur" />
+        </StackPanel>
+
+        <TextBlock TextWrapping="Wrap" Text="It is licenced as GPL3." />
+
+        <StackPanel>
+            <TextBlock TextWrapping="Wrap" Text="You can report issues at the repository if you have a GitHub account, or write to me directly:" />
+            <HyperlinkButton Content="mail@bloomca.me" Click="EmailLink_Click" />
+        </StackPanel>
+    </StackPanel>
+
+</ContentDialog >

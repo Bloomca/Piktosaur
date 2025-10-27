@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -86,6 +87,13 @@ namespace Piktosaur.Views
             {
                 AppStateVM.Shared.AddFolderQuery(folder);
             }
+        }
+
+        private async void InfoButtonClick(object sender, RoutedEventArgs e)
+        {
+            var aboutDialogue = new AboutDialogue();
+            aboutDialogue.XamlRoot = this.Content.XamlRoot;
+            await aboutDialogue.ShowAsync();
         }
     }
 }

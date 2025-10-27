@@ -14,6 +14,7 @@
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Views\AboutDialogue.xaml" />
     <None Remove="Views\ImageFile.xaml" />
     <None Remove="Views\ImageList.xaml" />
     <None Remove="Views\ImagePreview.xaml" />
@@ -45,6 +46,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4188" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250513003" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\AboutDialogue.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\ImageList.xaml">
