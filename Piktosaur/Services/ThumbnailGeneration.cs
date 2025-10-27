@@ -26,18 +26,12 @@ namespace Piktosaur.Services
     {
         private bool isDisposed = false;
 
-        private readonly SemaphoreSlim osThumbnailSemaphore;
-
         private readonly SmartQueue smartQueue;
 
         private readonly Dictionary<string, Boolean> thumbnailsGenerating = [];
 
         public ThumbnailGeneration()
         {
-            // the original idea was to enable multiple threads, but from my testing
-            // single threading model has the best UI performance
-            osThumbnailSemaphore = new SemaphoreSlim(4, 4);
-
             smartQueue = new SmartQueue(this);
         }
 
