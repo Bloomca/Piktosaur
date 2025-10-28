@@ -15,6 +15,8 @@ namespace Piktosaur.ViewModels
     {
         public string Name { get; }
 
+        public string Path { get; }
+
         private bool isDisposed = false;
 
         private readonly List<ImageResult> _images = [];
@@ -29,9 +31,10 @@ namespace Piktosaur.ViewModels
 
         public ObservableCollection<ImageResult> Images { get; } = [];
 
-        public FolderWithImages(string name, bool isExpanded = true)
+        public FolderWithImages(string name, string path, bool isExpanded = true)
         {
             Name = name;
+            Path = path;
             expanded = isExpanded;
         }
 

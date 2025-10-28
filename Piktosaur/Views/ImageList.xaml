@@ -83,7 +83,8 @@
                                         </FontIcon.RenderTransform>
                                     </FontIcon>
                                 </Button>
-                                <TextBlock VerticalAlignment="Center" Grid.Column="1" Text="{Binding Name}" />
+                                <TextBlock VerticalAlignment="Center" Grid.Column="1" Text="{Binding Name}"
+                                           ToolTipService.ToolTip="{Binding Path}"/>
                             </Grid>
                         </DataTemplate>
                     </GroupStyle.HeaderTemplate>
