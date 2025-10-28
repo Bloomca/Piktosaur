@@ -13,6 +13,7 @@ using Piktosaur.Models;
 using System.Collections.ObjectModel;
 using Piktosaur.ViewModels;
 using Microsoft.UI.Dispatching;
+using System.Diagnostics;
 
 namespace Piktosaur.Services
 {
@@ -74,51 +75,57 @@ namespace Piktosaur.Services
         {
             if (!Directory.Exists(path))
             {
-                throw new DirectoryNotFoundException();
+                return [];
             }
-
-            var files = Directory.EnumerateFiles(path);
 
             bool hasImages = false;
 
             try
             {
-                foreach (var file in files)
+                var files = Directory.EnumerateFiles(path);
+
+                try
                 {
-                    try
+                    foreach (var file in files)
                     {
-                        var fileInfo = new FileInfo(file);
-
-                        if (!fileInfo.Exists) { continue; }
-
-                        if (ImageExtensions.Contains(fileInfo.Extension.ToLowerInvariant()))
+                        try
                         {
-                            // Check for cloud/offline attributes
-                            var attributes = fileInfo.Attributes;
-                            if (attributes.HasFlag(System.IO.FileAttributes.Offline) ||
-                                attributes.HasFlag(System.IO.FileAttributes.ReparsePoint))
+                            var fileInfo = new FileInfo(file);
+
+                            if (!fileInfo.Exists) { continue; }
+
+                            if (ImageExtensions.Contains(fileInfo.Extension.ToLowerInvariant()))
                             {
-                                continue; // File is likely in cloud storage
+                                // Check for cloud/offline attributes
+                                var attributes = fileInfo.Attributes;
+                                if (attributes.HasFlag(System.IO.FileAttributes.Offline) ||
+                                    attributes.HasFlag(System.IO.FileAttributes.ReparsePoint))
+                                {
+                                    continue; // File is likely in cloud storage
+                                }
+
+                                hasImages = true;
+
+                                dispatcherQueue.TryEnqueue(() =>
+                                {
+                                    folder.AddImage(new ImageResult(file, thumbnailGeneration));
+                                });
                             }
-
-                            hasImages = true;
-
-                            dispatcherQueue.TryEnqueue(() =>
-                            {
-                                folder.AddImage(new ImageResult(file, thumbnailGeneration));
-                            });
                         }
-                    } catch
-                    {
-                        // if for some reason we couldn't get FileInfo, just skip the file
-                        continue;
+                        catch
+                        {
+                            // if for some reason we couldn't get FileInfo, just skip the file
+                            continue;
+                        }
                     }
                 }
-            }
-            catch
-            {
-                // e.g. if the directory cannot be accessed
-                return [];
+                catch
+                {
+                    // pass
+                }
+            } catch (Exception ex) {
+                Debug.WriteLine(ex.ToString());
+                // pass
             }
 
             // only add folder if it has some images
@@ -130,7 +137,14 @@ namespace Piktosaur.Services
                 });
             }
 
-            return Directory.EnumerateDirectories(path);
+            try
+            {
+                return Directory.EnumerateDirectories(path);
+            } catch
+            {
+                return [];
+            }
+            
         }
     }
 }
