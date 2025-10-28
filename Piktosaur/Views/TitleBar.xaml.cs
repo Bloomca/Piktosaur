@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -14,6 +7,14 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Piktosaur.Models;
 using Piktosaur.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
@@ -94,6 +95,24 @@ namespace Piktosaur.Views
             var aboutDialogue = new AboutDialogue();
             aboutDialogue.XamlRoot = this.Content.XamlRoot;
             await aboutDialogue.ShowAsync();
+        }
+
+        private void OpenFileExplorerClick(object sender, RoutedEventArgs e)
+        {
+            var path = AppStateVM.Shared.SelectedImagePath;
+
+            if (path != null)
+            {
+                Process.Start("explorer.exe", $"/select,\"{path}\"");
+            } else
+            {
+                var query = AppStateVM.Shared.SelectedQuery;
+                var folder = query.Folders[0];
+
+                if (folder != null) {
+                    Process.Start("explorer.exe", $"\"{folder}\"");
+                }
+            }
         }
     }
 }
