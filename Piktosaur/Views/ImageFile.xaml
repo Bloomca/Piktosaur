@@ -15,6 +15,8 @@
 
     <Grid Margin="4">
         <Image Width="200"
+               ToolTipService.ToolTip="{x:Bind Image.Path, Mode=OneWay}"
+               ToolTipService.Placement="Bottom"
                x:Name="ThumbnailImage"
                Source="{x:Bind Image.Thumbnail, Mode=OneWay}"
                Height="{x:Bind Image.Thumbnail, Mode=OneWay, Converter={StaticResource ThumbnailHeightConverter}}"

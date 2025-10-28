@@ -13,7 +13,8 @@
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8">
             <DropDownButton Margin="0, 0, 8, 0">
                 <DropDownButton.Content>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal"
+                                ToolTipService.ToolTip="Select folder with images">
                         <FontIcon Glyph="&#xE838;" Margin="0, 0, 8, 0" />
                         <TextBlock x:Name="Folder" Text="{x:Bind ViewModel.SelectedQuery.Name,Mode=OneWay}" />
                     </StackPanel>
@@ -25,10 +26,12 @@
             <Button Click="OpenFileExplorerClick"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Margin="0, 0, 8, 0">
+                    Margin="0, 0, 8, 0"
+                    ToolTipService.ToolTip="Open selected image in File Explorer">
                 <FontIcon Glyph="&#xE8DA;" />
             </Button>
-            <Button Click="InfoButtonClick" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Click="InfoButtonClick" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    ToolTipService.ToolTip="About Piktosaur application">
                 <FontIcon Glyph="&#xE946;" />
             </Button>
         </StackPanel>

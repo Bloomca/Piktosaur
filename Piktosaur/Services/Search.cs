@@ -59,7 +59,7 @@ namespace Piktosaur.Services
             var searchResult = new SearchResults(path);
             var imagesData = new ImagesData(path, searchResult.Images);
             var folderName = System.IO.Path.GetFileName(path);
-            var folderWithImages = new FolderWithImages(folderName);
+            var folderWithImages = new FolderWithImages(folderName, path);
 
             var directories = ReadDirectory(path, folderWithImages);
 
