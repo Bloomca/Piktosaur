@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
+using Piktosaur.ViewModels;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -48,6 +49,8 @@ namespace Piktosaur
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            EvaluateStartingPath();
+
             _window = new MainWindow();
             MainWindow = _window;
 
@@ -60,6 +63,23 @@ namespace Piktosaur
             }
 
             _window.Activate();
+        }
+
+        private void EvaluateStartingPath()
+        {
+            try
+            {
+                string[] commandLineArgs = Environment.GetCommandLineArgs();
+                if (commandLineArgs.Length <= 1) { return; }
+                var folderPath = commandLineArgs[1];
+                if (String.IsNullOrEmpty(folderPath)) { return; }
+                if (!Directory.Exists(folderPath)) { return; }
+
+                AppStateVM.Shared.AddPathQuery(folderPath);
+            } catch
+            {
+                // ignore
+            }
         }
     }
 }

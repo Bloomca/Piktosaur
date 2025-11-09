@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Piktosaur.Models;
+using Piktosaur.Services;
+using Piktosaur.Utils;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using Piktosaur.Models;
-using Piktosaur.Services;
-using Piktosaur.Utils;
 using Windows.Storage;
 
 namespace Piktosaur.ViewModels
@@ -61,8 +60,15 @@ namespace Piktosaur.ViewModels
 
         public void AddFolderQuery(StorageFolder folder)
         {
-            var relativePath = FileSystem.GetFormattedFolderName(folder.Path);
-            var newQuery = new Query(relativePath, [folder.Path]);
+            AddPathQuery(folder.Path);
+
+            JumpListHandler.AddToJumpList(folder);
+        }
+
+        public void AddPathQuery(string path)
+        {
+            var relativePath = FileSystem.GetFormattedFolderName(path);
+            var newQuery = new Query(relativePath, [path]);
             Queries.Add(newQuery);
 
             SelectedImagePath = null;
