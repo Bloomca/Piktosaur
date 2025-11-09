@@ -14,8 +14,8 @@ namespace Piktosaur.ViewModels
     public class AppStateVM : BaseViewModel
     {
         public static Query[] DefaultQueries = [
-            new Query("My Pictures", [FileSystem.GetPicturesFolder()]),
-            new Query("Downloads", [FileSystem.GetDownloadsFolder()])
+            new Query("My Pictures", FileSystem.GetPicturesFolder()),
+            new Query("Downloads", FileSystem.GetDownloadsFolder())
         ];
 
         public static AppStateVM Shared = new AppStateVM();
@@ -68,7 +68,7 @@ namespace Piktosaur.ViewModels
         public void AddPathQuery(string path)
         {
             var relativePath = FileSystem.GetFormattedFolderName(path);
-            var newQuery = new Query(relativePath, [path]);
+            var newQuery = new Query(relativePath, path);
             Queries.Add(newQuery);
 
             SelectedImagePath = null;

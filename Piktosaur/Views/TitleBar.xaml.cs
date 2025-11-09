@@ -61,7 +61,9 @@ namespace Piktosaur.Views
                     Text = query.Name,
                     Icon = new FontIcon { Glyph = "\uE8D5" }
                 };
+                flyoutItem.MaxWidth = 400;
                 flyoutItem.Click += (sender, e) => ViewModel.SelectQuery(savedQuery);
+                ToolTipService.SetToolTip(flyoutItem, query.Folder);
 
                 MenuElement.Items.Add(flyoutItem);
             }
@@ -107,7 +109,7 @@ namespace Piktosaur.Views
             } else
             {
                 var query = AppStateVM.Shared.SelectedQuery;
-                var folder = query.Folders[0];
+                var folder = query.Folder;
 
                 if (folder != null) {
                     Process.Start("explorer.exe", $"\"{folder}\"");

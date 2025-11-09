@@ -16,7 +16,10 @@
                     <StackPanel Orientation="Horizontal"
                                 ToolTipService.ToolTip="Select folder with images">
                         <FontIcon Glyph="&#xE838;" Margin="0, 0, 8, 0" />
-                        <TextBlock x:Name="Folder" Text="{x:Bind ViewModel.SelectedQuery.Name,Mode=OneWay}" />
+                        <TextBlock x:Name="Folder"
+                                   MaxWidth="275"
+                                   TextTrimming="CharacterEllipsis"
+                                   Text="{x:Bind ViewModel.SelectedQuery.Name,Mode=OneWay}" />
                     </StackPanel>
                 </DropDownButton.Content>
                 <DropDownButton.Flyout>

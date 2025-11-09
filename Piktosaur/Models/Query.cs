@@ -9,12 +9,12 @@ namespace Piktosaur.Models
     public class Query
     {
         public string Name { get; private set; }
-        public string[] Folders { get; private set; }
+        public string Folder { get; private set; }
 
-        public Query(string name, string[] folders)
+        public Query(string name, string folder)
         {
             Name = name;
-            Folders = folders;
+            Folder = folder;
         }
     }
 }
