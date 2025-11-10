@@ -1,12 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -18,6 +9,16 @@ using Microsoft.UI.Xaml.Shapes;
 using Piktosaur.Models;
 using Piktosaur.Services;
 using Piktosaur.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using static System.Net.Mime.MediaTypeNames;
@@ -44,16 +45,22 @@ namespace Piktosaur.Views
             LoadImages();
         }
 
-        private async void LoadImages()
+        private void LoadImages()
         {
             try
             {
-                await VM.LoadImages(Folders);
+                var task = VM.LoadImages(Folders);
 
-                // small delay to guarantee that grid view will be properly focused
-                // and the keyboard navigation will work immediately
-                await Task.Delay(50);
-                this.DispatcherQueue.TryEnqueue(async () => await FocusFirstItem());
+                task.ContinueWith(async (_) =>
+                {
+                    // small delay to guarantee that all data source is loaded
+                    await Task.Delay(250);
+                    DispatcherQueue.TryEnqueue(async () =>
+                    {
+                        await FocusSelectedItem();
+                        AppStateVM.Shared.isLocked = false;
+                    });
+                });
             }
             catch (OperationCanceledException)
             {
@@ -65,7 +72,7 @@ namespace Piktosaur.Views
             }
         }
 
-        private async Task FocusFirstItem()
+        private async Task FocusSelectedItem()
         {
             // Retry until container is available
             for (int i = 0; i < 10; i++)
@@ -73,27 +80,63 @@ namespace Piktosaur.Views
                 if (isDisposed) { return; }
                 if (GridViewElement.Items.Count > 0)
                 {
-                    var firstItem = GridViewElement.ContainerFromIndex(0) as GridViewItem;
-                    if (firstItem != null)
+                    var selectedImagePath = AppStateVM.Shared.SelectedImagePath;
+                    if (selectedImagePath == null) {
+                        if (GridViewElement.Items[0] is not ImageResult firstImageItem) return;
+                        var firstItem = GridViewElement.ContainerFromIndex(0) as GridViewItem;
+                        GridViewElement.SelectedItem = firstImageItem;
+                        if (SelectContainer(firstItem)) { return; }
+                    } else
                     {
-                        firstItem.Focus(FocusState.Keyboard);
-                        return;
-                    }
+                        for (var index = 0; index < GridViewElement.Items.Count; index++)
+                        {
+                            if (GridViewElement.Items[index] is not ImageResult imageItem) return;
+                            if (imageItem.Path == selectedImagePath)
+                            {
+                                if (index != 0)
+                                {
+                                    /// if the index is not 0, we should scroll the element into the view,
+                                    /// otherwise it might not be realized due to virtualization
+                                    GridViewElement.ScrollIntoView(imageItem, ScrollIntoViewAlignment.Default);
 
+                                    // wait a small amount so that the scrolled element will be realized
+                                    await Task.Delay(50);
+                                }
+
+                                var container = GridViewElement.ContainerFromIndex(index) as GridViewItem;
+                                if (container != null)
+                                {
+                                    AppStateVM.Shared.isLocked = false;
+                                    GridViewElement.SelectedItem = imageItem;
+                                    if (SelectContainer(container)) { return; }
+                                }
+                            }
+                        }
+                    }
                 }
-                await Task.Delay(100);
+                await Task.Delay(150);
             }
+        }
+
+        private bool SelectContainer(GridViewItem? item)
+        {
+            if (item != null)
+            {
+                item.Focus(FocusState.Keyboard);
+                return true;
+            }
+
+            return false;
         }
 
         private void GridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (AppStateVM.Shared.isLocked) return;
+
             if (sender is not GridView gridView) return;
             if (gridView.SelectedItem is not ImageResult selectedItem) return;
 
-            if (selectedItem != null)
-            {
-                AppStateVM.Shared.SelectImage(selectedItem.Path);
-            }
+            AppStateVM.Shared.SelectImage(selectedItem.Path);
         }
 
         private void ToggleGroupClick(object sender, RoutedEventArgs e)

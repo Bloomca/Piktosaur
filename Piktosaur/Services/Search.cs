@@ -44,12 +44,7 @@ namespace Piktosaur.Services
             this.dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         }
 
-        public void GetImages(string path)
-        {
-            _ = _GetImages(path);
-        }
-
-        private async Task _GetImages(string path)
+        public async Task GetImages(string path)
         {
               await Task.Run(() => GetFolderWithImages(path));
         }

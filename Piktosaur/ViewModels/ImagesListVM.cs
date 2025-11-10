@@ -22,8 +22,6 @@ namespace Piktosaur.ViewModels
 
         private ObservableCollection<FolderWithImages> _folders = new();
 
-        private bool hasSelectedImage = false;
-
         private bool loading = false;
 
         public bool Loading
@@ -38,14 +36,21 @@ namespace Piktosaur.ViewModels
             thumbnailGeneration = new ThumbnailGeneration();
         }
 
-        public async Task LoadImages(ObservableCollection<FolderWithImages> folders)
+        public Task LoadImages(ObservableCollection<FolderWithImages> folders)
         {
             _folders = folders;
             Loading = true;
 
             var currentQuery = appStateVM.SelectedQuery;
-            new Search(thumbnailGeneration, folders).GetImages(currentQuery.Folder);
+            var task = new Search(thumbnailGeneration, folders).GetImages(currentQuery.Folder);
 
+            _ = HandleThumbnails(folders);
+
+            return task;
+        }
+
+        private async Task HandleThumbnails(ObservableCollection<FolderWithImages> folders)
+        {
             // give it 100ms to load the first folder. This is not guaranteed by any means
             // but should work most of the time
             await Task.Delay(100);
@@ -72,23 +77,9 @@ namespace Piktosaur.ViewModels
                 thumbnailTasks.Add(image.GenerateThumbnail(cancellationTokenSource.Token));
             }
 
-            var firstImage = folder.Images.First();
-            if (firstImage != null)
-            {
-                SelectFirstImage(firstImage);
-            }
-
             cancellationTokenSource.Token.ThrowIfCancellationRequested();
 
             await Task.WhenAll(thumbnailTasks);
-        }
-
-        private void SelectFirstImage(ImageResult image)
-        {
-            if (hasSelectedImage == true) return;
-
-            appStateVM.SelectImage(image.Path);
-            hasSelectedImage = true;
         }
 
         public void Dispose()
