@@ -27,6 +27,8 @@ namespace Piktosaur.ViewModels
             private set => SetProperty(ref selectedImagePath, value);
         }
 
+        public bool isLocked = false;
+
         public bool SelectImage(string imagePath)
         {
             if (!System.IO.File.Exists(imagePath))

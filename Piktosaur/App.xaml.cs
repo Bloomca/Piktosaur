@@ -18,6 +18,8 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using WinRT.Interop;
 
+using Piktosaur.Services;
+
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -72,6 +74,9 @@ namespace Piktosaur
                 string[] commandLineArgs = Environment.GetCommandLineArgs();
                 if (commandLineArgs.Length <= 1) { return; }
                 var folderPath = commandLineArgs[1];
+
+                if (EvaluateStartingFile(folderPath)) { return; }
+
                 if (String.IsNullOrEmpty(folderPath)) { return; }
                 if (!Directory.Exists(folderPath)) { return; }
 
@@ -80,6 +85,35 @@ namespace Piktosaur
             {
                 // ignore
             }
+        }
+
+        private bool EvaluateStartingFile(string path)
+        {
+            try
+            {
+                if (!File.Exists(path)) { return false; }
+
+                var fileInfo = new FileInfo(path);
+
+                if (!fileInfo.Exists) { return false; }
+
+                if (Search.ImageExtensions.Contains(fileInfo.Extension.ToLowerInvariant()))
+                {
+                    var folderPath = System.IO.Path.GetDirectoryName(path);
+                    if (!Directory.Exists(folderPath)) { return false; }
+
+                    AppStateVM.Shared.isLocked = true;
+                    AppStateVM.Shared.AddPathQuery(folderPath);
+                    AppStateVM.Shared.SelectImage(path);
+                    return true;
+                }
+
+                return false;
+            } catch
+            {
+                return false;
+            }
+            
         }
     }
 }
