@@ -28,20 +28,24 @@ namespace Piktosaur.Services
     /// </summary>
     public class Search
     {
-        private ThumbnailGeneration thumbnailGeneration;
+        private IThumbnailGenerator thumbnailGenerator;
 
-        private DispatcherQueue dispatcherQueue;
+        private DispatcherQueue? dispatcherQueue;
 
         private ObservableCollection<FolderWithImages> folders;
 
         public static string[] ImageExtensions = [".jpg", ".jpeg", ".png"];
 
-        public Search(ThumbnailGeneration thumbnailGeneration, ObservableCollection<FolderWithImages> _folders)
+        public Search(IThumbnailGenerator thumbnailGenerator, ObservableCollection<FolderWithImages> folders)
+            : this(thumbnailGenerator, folders, DispatcherQueue.GetForCurrentThread())
         {
-            this.thumbnailGeneration = thumbnailGeneration;
-            this.folders = _folders;
+        }
 
-            this.dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        public Search(IThumbnailGenerator thumbnailGenerator, ObservableCollection<FolderWithImages> folders, DispatcherQueue? dispatcherQueue)
+        {
+            this.thumbnailGenerator = thumbnailGenerator;
+            this.folders = folders;
+            this.dispatcherQueue = dispatcherQueue;
         }
 
         public async Task GetImages(string path)
@@ -101,10 +105,18 @@ namespace Piktosaur.Services
 
                                 hasImages = true;
 
-                                dispatcherQueue.TryEnqueue(() =>
+                                var filePath = file;
+                                if (dispatcherQueue != null)
                                 {
-                                    folder.AddImage(new ImageResult(file, thumbnailGeneration));
-                                });
+                                    dispatcherQueue.TryEnqueue(() =>
+                                    {
+                                        folder.AddImage(new ImageResult(filePath, thumbnailGenerator));
+                                    });
+                                }
+                                else
+                                {
+                                    folder.AddImage(new ImageResult(filePath, thumbnailGenerator));
+                                }
                             }
                         }
                         catch
@@ -126,10 +138,17 @@ namespace Piktosaur.Services
             // only add folder if it has some images
             if (hasImages)
             {
-                dispatcherQueue.TryEnqueue(() =>
+                if (dispatcherQueue != null)
+                {
+                    dispatcherQueue.TryEnqueue(() =>
+                    {
+                        folders.Add(folder);
+                    });
+                }
+                else
                 {
                     folders.Add(folder);
-                });
+                }
             }
 
             try

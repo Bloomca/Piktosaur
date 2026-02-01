@@ -31,18 +31,18 @@ namespace Piktosaur.Models
             private set => SetProperty(ref _thumbnail, value);
         }
 
-        private ThumbnailGeneration thumbnailGeneration;
+        private IThumbnailGenerator thumbnailGenerator;
 
-        public ImageResult(string path, ThumbnailGeneration thumbnailGeneration)
+        public ImageResult(string path, IThumbnailGenerator thumbnailGenerator)
         {
             Path = path;
-            this.thumbnailGeneration = thumbnailGeneration;
+            this.thumbnailGenerator = thumbnailGenerator;
         }
 
         public async Task<Boolean> GenerateThumbnail(CancellationToken cancellationToken)
         {
             if (Thumbnail != null || isDisposed || cancellationToken.IsCancellationRequested) return false;
-            var thumbnail = await thumbnailGeneration.GenerateThumbnail(Path, cancellationToken);
+            var thumbnail = await thumbnailGenerator.GenerateThumbnail(Path, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (isDisposed) return false;
             Thumbnail = thumbnail;

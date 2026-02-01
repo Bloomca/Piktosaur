@@ -115,6 +115,11 @@ public class SmartQueueTests : IDisposable
 
         private TaskCompletionSource _blocker = new();
 
+        public Task<ImageSource?> GenerateThumbnail(string path, CancellationToken cancellationToken)
+        {
+            return Task.FromResult<ImageSource?>(null);
+        }
+
         public async Task<ImageSource> CreateManualThumbnail(string path, CancellationToken cancellationToken)
         {
             if (BlockExecution)
