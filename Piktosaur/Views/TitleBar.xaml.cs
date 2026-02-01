@@ -5,6 +5,7 @@ using Piktosaur.Services;
 using Piktosaur.ViewModels;
 using System;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -26,6 +27,7 @@ namespace Piktosaur.Views
 
             ViewModel.Queries.CollectionChanged += OnQueriesCollectionChanged;
             ImageQueryService.Shared.Folders.CollectionChanged += OnFoldersCollectionChanged;
+            SlideshowManager.Shared.PropertyChanged += OnSlideshowManagerPropertyChanged;
 
             // Initial state - disable until images are loaded
             UpdateSlideshowButtonState();
@@ -39,6 +41,14 @@ namespace Piktosaur.Views
         private void OnFoldersCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             UpdateSlideshowButtonState();
+        }
+
+        private void OnSlideshowManagerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SlideshowManager.IsOpen))
+            {
+                UpdateSlideshowButtonAppearance();
+            }
         }
 
         /// <summary>
@@ -117,21 +127,47 @@ namespace Piktosaur.Views
 
         private void SlideshowButtonClick(object sender, RoutedEventArgs e)
         {
-            // Check if there are any images to show
-            if (ImageQueryService.Shared.Folders.Count == 0)
+            if (SlideshowManager.Shared.IsOpen)
             {
-                return;
+                SlideshowManager.Shared.Close();
             }
+            else
+            {
+                // Check if there are any images to show
+                if (ImageQueryService.Shared.Folders.Count == 0)
+                {
+                    return;
+                }
 
-            SlideshowManager.Shared.Open();
+                SlideshowManager.Shared.Open();
+            }
         }
 
         /// <summary>
         /// Updates the slideshow button enabled state based on whether there are images.
         /// </summary>
-        public void UpdateSlideshowButtonState()
+        private void UpdateSlideshowButtonState()
         {
-            SlideshowButton.IsEnabled = ImageQueryService.Shared.Folders.Count > 0;
+            SlideshowButton.IsEnabled = SlideshowManager.Shared.IsOpen || ImageQueryService.Shared.Folders.Count > 0;
+        }
+
+        /// <summary>
+        /// Updates the slideshow button icon and tooltip based on whether slideshow is open.
+        /// </summary>
+        private void UpdateSlideshowButtonAppearance()
+        {
+            if (SlideshowManager.Shared.IsOpen)
+            {
+                SlideshowIcon.Glyph = "\uE71A"; // Stop icon
+                ToolTipService.SetToolTip(SlideshowButton, "Stop slideshow");
+            }
+            else
+            {
+                SlideshowIcon.Glyph = "\uE768"; // Play icon
+                ToolTipService.SetToolTip(SlideshowButton, "Start slideshow");
+            }
+
+            UpdateSlideshowButtonState();
         }
     }
 }
