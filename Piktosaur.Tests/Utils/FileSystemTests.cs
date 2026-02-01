@@ -27,11 +27,11 @@ public class FileSystemTests
     }
 
     [Fact]
-    public void GetFormattedFolderName_UserProfileItself_ReturnsDot()
+    public void GetFormattedFolderName_UserProfileItself_ReturnsUsername()
     {
         var result = FileSystem.GetFormattedFolderName(_userProfile);
 
-        Assert.Equal(".", result);
+        Assert.Equal(Environment.UserName, result);
     }
 
     [Fact]
