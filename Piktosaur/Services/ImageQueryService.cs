@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.UI.Dispatching;
 using Piktosaur.Models;
 using Piktosaur.ViewModels;
 
@@ -18,6 +19,7 @@ namespace Piktosaur.Services
 
         private IThumbnailGenerator thumbnailGenerator;
         private bool ownsThumbnailGenerator;
+        private bool useDispatcherQueue;
         private bool isDisposed = false;
 
         /// <summary>
@@ -30,15 +32,18 @@ namespace Piktosaur.Services
         {
             thumbnailGenerator = new ThumbnailGenerator();
             ownsThumbnailGenerator = true;
+            useDispatcherQueue = true;
         }
 
         /// <summary>
         /// Constructor for testing - allows injecting a mock thumbnail generator.
+        /// DispatcherQueue is not used in test mode.
         /// </summary>
         public ImageQueryService(IThumbnailGenerator thumbnailGenerator)
         {
             this.thumbnailGenerator = thumbnailGenerator;
             ownsThumbnailGenerator = false;
+            useDispatcherQueue = false;
         }
 
         /// <summary>
@@ -49,7 +54,8 @@ namespace Piktosaur.Services
         {
             ClearFolders();
 
-            var search = new Search(thumbnailGenerator, Folders);
+            DispatcherQueue? dispatcherQueue = useDispatcherQueue ? DispatcherQueue.GetForCurrentThread() : null;
+            var search = new Search(thumbnailGenerator, Folders, dispatcherQueue);
             return search.GetImages(query.Folder);
         }
 
