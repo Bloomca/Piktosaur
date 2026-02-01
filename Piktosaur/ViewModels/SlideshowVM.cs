@@ -1,12 +1,17 @@
 using System;
+using Microsoft.UI.Dispatching;
 using Piktosaur.Services;
 
 namespace Piktosaur.ViewModels
 {
-    public class SlideshowVM : BaseViewModel
+    public class SlideshowVM : BaseViewModel, IDisposable
     {
+        private const int SlideshowIntervalSeconds = 5;
+
         private string[] imagePaths;
         private int currentIndex;
+        private DispatcherQueueTimer? timer;
+        private bool isDisposed;
 
         public string? CurrentImagePath
         {
@@ -30,6 +35,8 @@ namespace Piktosaur.ViewModels
                     currentIndex = index;
                 }
             }
+
+            StartTimer();
         }
 
         public bool HasImages => imagePaths.Length > 0;
@@ -48,6 +55,26 @@ namespace Piktosaur.ViewModels
 
             currentIndex = (currentIndex - 1 + imagePaths.Length) % imagePaths.Length;
             OnPropertyChanged(nameof(CurrentImagePath));
+        }
+
+        private void StartTimer()
+        {
+            var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            if (dispatcherQueue == null) return;
+
+            timer = dispatcherQueue.CreateTimer();
+            timer.Interval = TimeSpan.FromSeconds(SlideshowIntervalSeconds);
+            timer.Tick += (s, e) => NextImage();
+            timer.Start();
+        }
+
+        public void Dispose()
+        {
+            if (isDisposed) return;
+            isDisposed = true;
+
+            timer?.Stop();
+            timer = null;
         }
     }
 }

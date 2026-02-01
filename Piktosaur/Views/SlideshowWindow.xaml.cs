@@ -22,8 +22,15 @@ namespace Piktosaur.Views
             viewModel = new SlideshowVM();
             viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
+            Closed += OnWindowClosed;
+
             UpdateImage();
             SetFullScreen();
+        }
+
+        private void OnWindowClosed(object sender, WindowEventArgs args)
+        {
+            viewModel.Dispose();
         }
 
         private void SetFullScreen()
