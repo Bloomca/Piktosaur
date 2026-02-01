@@ -16,7 +16,8 @@ namespace Piktosaur.Services
     {
         public static ImageQueryService Shared = new ImageQueryService();
 
-        private ThumbnailGeneration thumbnailGeneration;
+        private IThumbnailGenerator thumbnailGenerator;
+        private bool ownsThumbnailGenerator;
         private bool isDisposed = false;
 
         /// <summary>
@@ -27,7 +28,17 @@ namespace Piktosaur.Services
 
         private ImageQueryService()
         {
-            thumbnailGeneration = new ThumbnailGeneration();
+            thumbnailGenerator = new ThumbnailGenerator();
+            ownsThumbnailGenerator = true;
+        }
+
+        /// <summary>
+        /// Constructor for testing - allows injecting a mock thumbnail generator.
+        /// </summary>
+        public ImageQueryService(IThumbnailGenerator thumbnailGenerator)
+        {
+            this.thumbnailGenerator = thumbnailGenerator;
+            ownsThumbnailGenerator = false;
         }
 
         /// <summary>
@@ -38,7 +49,7 @@ namespace Piktosaur.Services
         {
             ClearFolders();
 
-            var search = new Search(thumbnailGeneration, Folders);
+            var search = new Search(thumbnailGenerator, Folders);
             return search.GetImages(query.Folder);
         }
 
@@ -97,7 +108,10 @@ namespace Piktosaur.Services
             isDisposed = true;
 
             ClearFolders();
-            thumbnailGeneration.Dispose();
+            if (ownsThumbnailGenerator && thumbnailGenerator is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
         }
     }
 }

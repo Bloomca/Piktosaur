@@ -6,6 +6,7 @@ namespace Piktosaur.Services
 {
     public interface IThumbnailGenerator
     {
+        Task<ImageSource?> GenerateThumbnail(string path, CancellationToken cancellationToken);
         Task<ImageSource> CreateManualThumbnail(string path, CancellationToken cancellationToken);
     }
 }

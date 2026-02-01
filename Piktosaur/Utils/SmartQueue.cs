@@ -12,7 +12,7 @@ namespace Piktosaur.Utils
 {
     /// <summary>
     /// This is a custom implementation of priority queue. It is not a generic
-    /// implementation, it directly calls `ThumbnailGeneration` from DI.
+    /// implementation, it directly calls `ThumbnailGenerator` from DI.
     /// 
     /// The idea is to schedule thumbnail creation through this queue, as it
     /// has backpressure built-in, so rapid scrolling will drop pretty much
