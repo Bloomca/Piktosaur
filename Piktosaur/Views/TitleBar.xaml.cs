@@ -1,22 +1,11 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using Piktosaur.Models;
+using Piktosaur.Services;
 using Piktosaur.ViewModels;
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -36,11 +25,20 @@ namespace Piktosaur.Views
             SetFlyoutItems();
 
             ViewModel.Queries.CollectionChanged += OnQueriesCollectionChanged;
+            ImageQueryService.Shared.Folders.CollectionChanged += OnFoldersCollectionChanged;
+
+            // Initial state - disable until images are loaded
+            UpdateSlideshowButtonState();
         }
 
         private void OnQueriesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             SetFlyoutItems();
+        }
+
+        private void OnFoldersCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            UpdateSlideshowButtonState();
         }
 
         /// <summary>
@@ -115,6 +113,25 @@ namespace Piktosaur.Views
                     Process.Start("explorer.exe", $"\"{folder}\"");
                 }
             }
+        }
+
+        private void SlideshowButtonClick(object sender, RoutedEventArgs e)
+        {
+            // Check if there are any images to show
+            if (ImageQueryService.Shared.Folders.Count == 0)
+            {
+                return;
+            }
+
+            SlideshowManager.Shared.Open();
+        }
+
+        /// <summary>
+        /// Updates the slideshow button enabled state based on whether there are images.
+        /// </summary>
+        public void UpdateSlideshowButtonState()
+        {
+            SlideshowButton.IsEnabled = ImageQueryService.Shared.Folders.Count > 0;
         }
     }
 }
