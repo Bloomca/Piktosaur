@@ -28,6 +28,8 @@ namespace Piktosaur.Utils
 
             if (relativePath.StartsWith("..")) return path;
 
+            if (relativePath == ".") return Environment.UserName;
+
             return relativePath;
         }
     }

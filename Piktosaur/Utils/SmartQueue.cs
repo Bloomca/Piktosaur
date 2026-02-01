@@ -26,16 +26,17 @@ namespace Piktosaur.Utils
     {
         private readonly int MAX_REQUESTS = 20;
         private List<QueueItem> requests = new();
+        private List<QueueItem> activeRequests = new();
 
-        private ThumbnailGeneration thumbnailGeneration;
+        private IThumbnailGenerator thumbnailGenerator;
 
         private bool isExecuting = false;
 
         private bool isDisposed = false;
 
-        public SmartQueue(ThumbnailGeneration thumbnailGeneration)
+        public SmartQueue(IThumbnailGenerator thumbnailGenerator)
         {
-            this.thumbnailGeneration = thumbnailGeneration;
+            this.thumbnailGenerator = thumbnailGenerator;
         }
 
         public Task<ImageSource?> AddRequest(string path, CancellationToken ct)
@@ -68,6 +69,7 @@ namespace Piktosaur.Utils
                 foreach (var request in newRequests)
                 {
                     requests.Remove(request);
+                    activeRequests.Add(request);
                 }
 
                 var tasks = newRequests.Select(async newRequest =>
@@ -75,12 +77,16 @@ namespace Piktosaur.Utils
                     try
                     {
                         newRequest.ct.ThrowIfCancellationRequested();
-                        var result = await thumbnailGeneration.CreateManualThumbnail(newRequest.Path, newRequest.ct);
+                        var result = await thumbnailGenerator.CreateManualThumbnail(newRequest.Path, newRequest.ct);
                         newRequest.Tcs.SetResult(result);
                     }
                     catch
                     {
                         newRequest.Tcs.SetResult(null);
+                    }
+                    finally
+                    {
+                        activeRequests.Remove(newRequest);
                     }
                 });
 
@@ -104,7 +110,13 @@ namespace Piktosaur.Utils
                 request.Tcs.SetResult(null);
             }
 
+            foreach (var request in activeRequests)
+            {
+                request.Tcs.SetResult(null);
+            }
+
             requests.Clear();
+            activeRequests.Clear();
         }
     }
 
