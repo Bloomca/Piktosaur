@@ -10,15 +10,20 @@ This is a WinUI3 application to view images in a folder recursively -- it scans 
 
 ## Build Commands
 
+WinUI3 requires MSBuild (not `dotnet build`) and a specific platform. From the repo root:
+
 ```bash
-# Build (from repo root)
-dotnet build Piktosaur.sln
+# Restore packages
+dotnet restore Piktosaur.sln
 
-# Build specific configuration
-dotnet build Piktosaur.sln -c Release -p:Platform=x64
+# Build main project
+"/c/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe" Piktosaur/Piktosaur.csproj -p:Platform=x64 -v:q
 
-# Run
-dotnet run --project Piktosaur/Piktosaur.csproj
+# Build test project
+"/c/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe" Piktosaur.Tests/Piktosaur.Tests.csproj -p:Platform=x64 -v:q
+
+# Run tests (after building)
+cmd.exe //c "dotnet test Piktosaur.Tests\\Piktosaur.Tests.csproj -p:Platform=x64 --no-build"
 ```
 
 ## Project Structure
@@ -45,10 +50,9 @@ Piktosaur/
 
 ## Testing
 
-<!-- Fill in once test project is added -->
-
-Test framework:
-Test project location:
+- **Framework:** xUnit
+- **Project location:** `Piktosaur.Tests/`
+- **Run tests:** See build commands above
 
 ## Feature Specs
 
