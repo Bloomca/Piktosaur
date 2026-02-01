@@ -22,7 +22,7 @@ using Windows.Storage.FileProperties;
 
 namespace Piktosaur.Services
 {
-    public class ThumbnailGeneration : IDisposable
+    public class ThumbnailGeneration : IThumbnailGenerator, IDisposable
     {
         private bool isDisposed = false;
 
