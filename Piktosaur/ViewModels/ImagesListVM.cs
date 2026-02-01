@@ -1,26 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.UI.Xaml.Controls;
-using Piktosaur.Models;
 using Piktosaur.Services;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Piktosaur.ViewModels
 {
     public class ImagesListVM : BaseViewModel, IDisposable
     {
         private AppStateVM appStateVM;
-
-        private ThumbnailGeneration thumbnailGeneration;
-
+        private ImageQueryService imageQueryService;
         private CancellationTokenSource? cancellationTokenSource;
-
-        private ObservableCollection<FolderWithImages> _folders = new();
+        private bool isDisposed = false;
 
         private bool loading = false;
 
@@ -33,64 +23,42 @@ namespace Piktosaur.ViewModels
         public ImagesListVM(AppStateVM appStateVM)
         {
             this.appStateVM = appStateVM;
-            thumbnailGeneration = new ThumbnailGeneration();
+            this.imageQueryService = ImageQueryService.Shared;
         }
 
-        public Task LoadImages(ObservableCollection<FolderWithImages> folders)
+        public Task LoadImages()
         {
-            _folders = folders;
             Loading = true;
 
-            var currentQuery = appStateVM.SelectedQuery;
-            var task = new Search(thumbnailGeneration, folders).GetImages(currentQuery.Folder);
+            cancellationTokenSource = new CancellationTokenSource();
 
-            _ = HandleThumbnails(folders);
+            var currentQuery = appStateVM.SelectedQuery;
+            var task = imageQueryService.ExecuteQuery(currentQuery);
+
+            _ = HandleThumbnails();
 
             return task;
         }
 
-        private async Task HandleThumbnails(ObservableCollection<FolderWithImages> folders)
+        private async Task HandleThumbnails()
         {
             // give it 100ms to load the first folder. This is not guaranteed by any means
             // but should work most of the time
             await Task.Delay(100);
 
-            await LoadThumbnails(folders);
+            var token = cancellationTokenSource?.Token ?? CancellationToken.None;
+            await imageQueryService.GenerateInitialThumbnails(token);
 
             Loading = false;
         }
 
-        private async Task LoadThumbnails(ObservableCollection<FolderWithImages> folders)
-        {
-            if (folders.Count == 0) return;
-
-            var folder = folders.First();
-
-            if (folder == null) return;
-
-            List<Task> thumbnailTasks = [];
-
-            cancellationTokenSource = new CancellationTokenSource();
-
-            foreach (var image in folder.Images.Take(25))
-            {
-                thumbnailTasks.Add(image.GenerateThumbnail(cancellationTokenSource.Token));
-            }
-
-            cancellationTokenSource.Token.ThrowIfCancellationRequested();
-
-            await Task.WhenAll(thumbnailTasks);
-        }
-
         public void Dispose()
         {
-            cancellationTokenSource?.Cancel();
-            foreach (var folder in _folders)
-            {
-                folder?.Dispose();
-            }
+            if (isDisposed) return;
+            isDisposed = true;
 
-            thumbnailGeneration.Dispose();
+            cancellationTokenSource?.Cancel();
+            // Note: We don't dispose imageQueryService here as it's a shared singleton
         }
     }
 }
