@@ -26,6 +26,14 @@
                     <MenuFlyout x:Name="MenuElement" Placement="Bottom" />
                 </DropDownButton.Flyout>
             </DropDownButton>
+            <Button x:Name="SlideshowButton"
+                    Click="SlideshowButtonClick"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="0, 0, 8, 0"
+                    ToolTipService.ToolTip="Start slideshow">
+                <FontIcon x:Name="SlideshowIcon" Glyph="&#xE768;" />
+            </Button>
             <Button Click="OpenFileExplorerClick"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
