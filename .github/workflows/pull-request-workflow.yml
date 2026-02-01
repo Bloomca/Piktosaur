@@ -1,0 +1,28 @@
+name: codebase-health-checks
+run-name: Running tests
+
+on:
+  push:
+        branches:
+            - main
+  pull_request:
+
+jobs:
+  run-tests:
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore Piktosaur.sln
+
+      - name: Build test project
+        run: msbuild Piktosaur.Tests/Piktosaur.Tests.csproj /p:Platform=x64
+
+      - name: Run tests
+        run: dotnet test Piktosaur.Tests/Piktosaur.Tests.csproj -p:Platform=x64 --no-build
