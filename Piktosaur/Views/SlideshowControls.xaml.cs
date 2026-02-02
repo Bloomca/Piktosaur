@@ -43,6 +43,10 @@ namespace Piktosaur.Views
                 if (viewModel?.IsPlaying == true)
                 {
                     ProgressBar.Restart();
+                } else
+                {
+                    ProgressBar.Restart();
+                    ProgressBar.Pause();
                 }
             }
         }
