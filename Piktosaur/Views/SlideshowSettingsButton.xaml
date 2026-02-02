@@ -22,9 +22,8 @@
                               Header="Animation"
                               HorizontalAlignment="Stretch"
                               SelectionChanged="OnAnimationSelectionChanged">
-                        <ComboBoxItem Content="None" Tag="None" IsSelected="True" />
-                        <ComboBoxItem Content="Fade" Tag="Fade" />
-                        <ComboBoxItem Content="Slide" Tag="Slide" />
+                        <ComboBoxItem Content="None" Tag="None" />
+                        <ComboBoxItem Content="Fade" Tag="Fade" IsSelected="True" />
                         <ComboBoxItem Content="Zoom" Tag="Zoom" />
                     </ComboBox>
 
