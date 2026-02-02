@@ -8,6 +8,7 @@ namespace Piktosaur.ViewModels
     {
         public static readonly TimeSpan SlideshowInterval = TimeSpan.FromSeconds(5);
 
+        private readonly Random random = new();
         private string[] imagePaths;
         private int currentIndex;
         private DispatcherQueueTimer? timer;
@@ -22,7 +23,8 @@ namespace Piktosaur.ViewModels
         public SlideshowVM()
         {
             // Get snapshot of current images
-            imagePaths = ImageQueryService.Shared.GetImagePathsSnapshot();
+            var skipCollapsed = SettingsVM.Shared.SkipCollapsedFolders;
+            imagePaths = ImageQueryService.Shared.GetImagePathsSnapshot(skipCollapsed);
 
             // Find the starting index based on selected image
             var selectedPath = AppStateVM.Shared.SelectedImagePath;
@@ -52,7 +54,14 @@ namespace Piktosaur.ViewModels
         {
             if (imagePaths.Length == 0 || imagePaths.Length == 1) return;
 
-            currentIndex = (currentIndex + 1) % imagePaths.Length;
+            if (SettingsVM.Shared.UseRandomOrder)
+            {
+                currentIndex = random.Next(imagePaths.Length);
+            }
+            else
+            {
+                currentIndex = (currentIndex + 1) % imagePaths.Length;
+            }
             OnPropertyChanged(nameof(CurrentImagePath));
             ResetTimer();
         }
@@ -61,7 +70,14 @@ namespace Piktosaur.ViewModels
         {
             if (imagePaths.Length == 0 || imagePaths.Length == 1) return;
 
-            currentIndex = (currentIndex - 1 + imagePaths.Length) % imagePaths.Length;
+            if (SettingsVM.Shared.UseRandomOrder)
+            {
+                currentIndex = random.Next(imagePaths.Length);
+            }
+            else
+            {
+                currentIndex = (currentIndex - 1 + imagePaths.Length) % imagePaths.Length;
+            }
             OnPropertyChanged(nameof(CurrentImagePath));
             ResetTimer();
         }

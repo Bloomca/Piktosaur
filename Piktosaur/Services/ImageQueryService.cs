@@ -63,15 +63,17 @@ namespace Piktosaur.Services
         /// Returns a snapshot of current image paths for use by the slideshow.
         /// The slideshow gets its own copy, independent of future query changes.
         /// </summary>
-        public string[] GetImagePathsSnapshot()
+        public string[] GetImagePathsSnapshot(bool skipCollapsedFolders = false)
         {
             var paths = new List<string>();
             foreach (var folder in Folders)
             {
-                foreach (var image in folder.Images)
+                if (skipCollapsedFolders && !folder.Expanded)
                 {
-                    paths.Add(image.Path);
+                    continue;
                 }
+
+                paths.AddRange(folder.ImagePaths);
             }
             return paths.ToArray();
         }

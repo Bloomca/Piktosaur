@@ -20,6 +20,9 @@ namespace Piktosaur.ViewModels
         private bool isDisposed = false;
 
         private readonly List<ImageResult> _images = [];
+        private readonly List<string> _imagePaths = [];
+
+        public IReadOnlyList<string> ImagePaths => _imagePaths;
 
         private bool expanded;
 
@@ -41,6 +44,7 @@ namespace Piktosaur.ViewModels
         public void AddImage(ImageResult image)
         {
             _images.Add(image);
+            _imagePaths.Add(image.Path);
 
             if (expanded)
             {
