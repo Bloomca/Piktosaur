@@ -24,6 +24,11 @@ namespace Piktosaur.Views
             viewModel = vm;
             viewModel.PropertyChanged += ViewModel_PropertyChanged;
             UpdatePlayPauseIcon();
+
+            if (viewModel.IsPlaying)
+            {
+                ProgressBar.Start();
+            }
         }
 
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -31,6 +36,14 @@ namespace Piktosaur.Views
             if (e.PropertyName == nameof(SlideshowVM.IsPlaying))
             {
                 UpdatePlayPauseIcon();
+                UpdateProgressBar();
+            }
+            else if (e.PropertyName == nameof(SlideshowVM.CurrentImagePath))
+            {
+                if (viewModel?.IsPlaying == true)
+                {
+                    ProgressBar.Restart();
+                }
             }
         }
 
@@ -38,6 +51,20 @@ namespace Piktosaur.Views
         {
             if (viewModel == null) return;
             PlayPauseIcon.Glyph = viewModel.IsPlaying ? "\uE769" : "\uE768";
+        }
+
+        private void UpdateProgressBar()
+        {
+            if (viewModel == null) return;
+
+            if (viewModel.IsPlaying)
+            {
+                ProgressBar.Resume();
+            }
+            else
+            {
+                ProgressBar.Pause();
+            }
         }
 
         private void OnFirstClick(object sender, RoutedEventArgs e)

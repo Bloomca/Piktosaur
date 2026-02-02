@@ -9,40 +9,48 @@
     mc:Ignorable="d">
 
     <Border Background="#CC202020"
-            CornerRadius="8"
-            Padding="8,8,8,8">
-        <StackPanel Orientation="Horizontal" Spacing="4">
-            <Button Click="OnFirstClick"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    ToolTipService.ToolTip="First image">
-                <FontIcon Glyph="&#xEB9E;" Foreground="White" FontSize="16" />
-            </Button>
-            <Button Click="OnPreviousClick"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    ToolTipService.ToolTip="Previous image">
-                <FontIcon Glyph="&#xE892;" Foreground="White" FontSize="16" />
-            </Button>
-            <Button x:Name="PlayPauseButton"
-                    Click="OnPlayPauseClick"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    ToolTipService.ToolTip="Play/Pause">
-                <FontIcon x:Name="PlayPauseIcon" Glyph="&#xE769;" Foreground="White" FontSize="16" />
-            </Button>
-            <Button Click="OnNextClick"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    ToolTipService.ToolTip="Next image">
-                <FontIcon Glyph="&#xE893;" Foreground="White" FontSize="16" />
-            </Button>
-            <Button Click="OnLastClick"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    ToolTipService.ToolTip="Last image">
-                <FontIcon Glyph="&#xEB9D;" Foreground="White" FontSize="16" />
-            </Button>
-        </StackPanel>
+            CornerRadius="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="4" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" Margin="8">
+                <Button Click="OnFirstClick"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        ToolTipService.ToolTip="First image">
+                    <FontIcon Glyph="&#xEB9E;" Foreground="White" FontSize="16" />
+                </Button>
+                <Button Click="OnPreviousClick"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        ToolTipService.ToolTip="Previous image">
+                    <FontIcon Glyph="&#xE892;" Foreground="White" FontSize="16" />
+                </Button>
+                <Button x:Name="PlayPauseButton"
+                        Click="OnPlayPauseClick"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        ToolTipService.ToolTip="Play/Pause">
+                    <FontIcon x:Name="PlayPauseIcon" Glyph="&#xE769;" Foreground="White" FontSize="16" />
+                </Button>
+                <Button Click="OnNextClick"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        ToolTipService.ToolTip="Next image">
+                    <FontIcon Glyph="&#xE893;" Foreground="White" FontSize="16" />
+                </Button>
+                <Button Click="OnLastClick"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        ToolTipService.ToolTip="Last image">
+                    <FontIcon Glyph="&#xEB9D;" Foreground="White" FontSize="16" />
+                </Button>
+            </StackPanel>
+
+            <local:SlideshowProgressBar x:Name="ProgressBar" Grid.Row="1" />
+        </Grid>
     </Border>
 </UserControl>
