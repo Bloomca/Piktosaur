@@ -4,7 +4,6 @@ namespace Piktosaur.ViewModels
     {
         None,
         Fade,
-        Slide,
         Zoom
     }
 
@@ -12,7 +11,7 @@ namespace Piktosaur.ViewModels
     {
         public static SettingsVM Shared = new SettingsVM();
 
-        private SlideshowAnimation slideshowAnimation = SlideshowAnimation.None;
+        private SlideshowAnimation slideshowAnimation = SlideshowAnimation.Fade;
         private bool useRandomOrder = false;
         private bool skipCollapsedFolders = false;
 

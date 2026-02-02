@@ -24,7 +24,6 @@ namespace Piktosaur.Views
                 SettingsVM.Shared.SlideshowAnimation = tag switch
                 {
                     "Fade" => SlideshowAnimation.Fade,
-                    "Slide" => SlideshowAnimation.Slide,
                     "Zoom" => SlideshowAnimation.Zoom,
                     _ => SlideshowAnimation.None
                 };

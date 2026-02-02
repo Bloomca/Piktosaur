@@ -5,7 +5,6 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Piktosaur.ViewModels;
 using WinRT.Interop;
 
@@ -88,17 +87,7 @@ namespace Piktosaur.Views
 
         private void UpdateImage()
         {
-            var path = viewModel.CurrentImagePath;
-            if (path != null)
-            {
-                var bitmap = new BitmapImage();
-                bitmap.UriSource = new Uri(path);
-                SlideshowImage.Source = bitmap;
-            }
-            else
-            {
-                SlideshowImage.Source = null;
-            }
+            ImageView.SetImage(viewModel.CurrentImagePath);
         }
 
         private void OnEscapePressed(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)

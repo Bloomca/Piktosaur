@@ -19,10 +19,7 @@
             <KeyboardAccelerator Key="Right" Invoked="OnRightPressed" />
             <KeyboardAccelerator Key="Space" Invoked="OnSpacePressed" />
         </Grid.KeyboardAccelerators>
-        <Image x:Name="SlideshowImage"
-               Stretch="Uniform"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center" />
+        <local:SlideshowImageView x:Name="ImageView" />
 
         <local:SlideshowControls x:Name="Controls"
                                  HorizontalAlignment="Center"
