@@ -6,7 +6,7 @@ namespace Piktosaur.ViewModels
 {
     public class SlideshowVM : BaseViewModel, IDisposable
     {
-        private const int SlideshowIntervalSeconds = 5;
+        public static readonly TimeSpan SlideshowInterval = TimeSpan.FromSeconds(5);
 
         private string[] imagePaths;
         private int currentIndex;
@@ -112,7 +112,7 @@ namespace Piktosaur.ViewModels
             if (dispatcherQueue == null) return;
 
             timer = dispatcherQueue.CreateTimer();
-            timer.Interval = TimeSpan.FromSeconds(SlideshowIntervalSeconds);
+            timer.Interval = SlideshowInterval;
             timer.Tick += (s, e) => NextImage();
             timer.Start();
         }
