@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Piktosaur.Views.SlideshowSettingsButton"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Button HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            ToolTipService.ToolTip="Slideshow settings">
+        <FontIcon Glyph="&#xE713;" />
+        <Button.Flyout>
+            <Flyout x:Name="SettingsFlyout" Closing="OnSettingsFlyoutClosing">
+                <StackPanel Spacing="12" MinWidth="250">
+                    <TextBlock Text="Slideshow"
+                               FontWeight="SemiBold"
+                               FontSize="14" />
+
+                    <ComboBox x:Name="AnimationComboBox"
+                              Header="Animation"
+                              HorizontalAlignment="Stretch"
+                              SelectionChanged="OnAnimationSelectionChanged">
+                        <ComboBoxItem Content="None" Tag="None" IsSelected="True" />
+                        <ComboBoxItem Content="Fade" Tag="Fade" />
+                        <ComboBoxItem Content="Slide" Tag="Slide" />
+                        <ComboBoxItem Content="Zoom" Tag="Zoom" />
+                    </ComboBox>
+
+                    <ToggleSwitch x:Name="RandomOrderToggle"
+                                  Header="Random order"
+                                  Toggled="OnRandomOrderToggled" />
+
+                    <ToggleSwitch x:Name="SkipCollapsedToggle"
+                                  Header="Skip collapsed folders"
+                                  Toggled="OnSkipCollapsedToggled" />
+                </StackPanel>
+            </Flyout>
+        </Button.Flyout>
+    </Button>
+</UserControl>

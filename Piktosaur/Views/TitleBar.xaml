@@ -34,6 +34,7 @@
                     ToolTipService.ToolTip="Start slideshow">
                 <FontIcon x:Name="SlideshowIcon" Glyph="&#xE768;" />
             </Button>
+            <local:SlideshowSettingsButton Margin="0, 0, 8, 0" />
             <Button Click="OpenFileExplorerClick"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
