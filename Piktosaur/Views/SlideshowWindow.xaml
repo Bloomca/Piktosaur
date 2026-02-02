@@ -9,7 +9,10 @@
     mc:Ignorable="d"
     Title="Slideshow">
 
-    <Grid Background="Black" KeyboardAcceleratorPlacementMode="Hidden">
+    <Grid x:Name="RootGrid"
+          Background="Black"
+          KeyboardAcceleratorPlacementMode="Hidden"
+          PointerMoved="OnPointerMoved">
         <Grid.KeyboardAccelerators>
             <KeyboardAccelerator Key="Escape" Invoked="OnEscapePressed" />
             <KeyboardAccelerator Key="Left" Invoked="OnLeftPressed" />

@@ -1,17 +1,50 @@
+using System;
 using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
 using Piktosaur.ViewModels;
 
 namespace Piktosaur.Views
 {
     public sealed partial class SlideshowControls : UserControl
     {
+        private static readonly TimeSpan FadeOutDuration = TimeSpan.FromMilliseconds(200);
+
         private SlideshowVM? viewModel;
+        private bool isPointerOver;
+
+        public bool IsPointerOver => isPointerOver;
 
         public SlideshowControls()
         {
             InitializeComponent();
+            PointerEntered += (s, e) => isPointerOver = true;
+            PointerExited += (s, e) => isPointerOver = false;
+        }
+
+        public void Show()
+        {
+            Visibility = Visibility.Visible;
+            Opacity = 1;
+        }
+
+        public void Hide()
+        {
+            var animation = new DoubleAnimation
+            {
+                From = 1,
+                To = 0,
+                Duration = new Duration(FadeOutDuration),
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+            };
+
+            var storyboard = new Storyboard();
+            Storyboard.SetTarget(animation, this);
+            Storyboard.SetTargetProperty(animation, "Opacity");
+            storyboard.Children.Add(animation);
+            storyboard.Completed += (s, e) => Visibility = Visibility.Collapsed;
+            storyboard.Begin();
         }
 
         public void SetViewModel(SlideshowVM vm)
