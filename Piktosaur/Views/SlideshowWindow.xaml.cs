@@ -22,6 +22,8 @@ namespace Piktosaur.Views
             viewModel = new SlideshowVM();
             viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
+            Controls.SetViewModel(viewModel);
+
             Closed += OnWindowClosed;
 
             UpdateImage();
@@ -88,7 +90,7 @@ namespace Piktosaur.Views
 
         private void OnSpacePressed(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
-            // TODO: Step 8 - Toggle pause
+            viewModel.TogglePlayPause();
             args.Handled = true;
         }
     }

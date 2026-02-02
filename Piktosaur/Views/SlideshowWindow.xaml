@@ -20,5 +20,10 @@
                Stretch="Uniform"
                HorizontalAlignment="Center"
                VerticalAlignment="Center" />
+
+        <local:SlideshowControls x:Name="Controls"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Bottom"
+                                 Margin="0,0,0,48" />
     </Grid>
 </Window>

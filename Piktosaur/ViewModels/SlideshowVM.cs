@@ -12,6 +12,7 @@ namespace Piktosaur.ViewModels
         private int currentIndex;
         private DispatcherQueueTimer? timer;
         private bool isDisposed;
+        private bool isPlaying = true;
 
         public string? CurrentImagePath
         {
@@ -41,12 +42,19 @@ namespace Piktosaur.ViewModels
 
         public bool HasImages => imagePaths.Length > 0;
 
+        public bool IsPlaying
+        {
+            get => isPlaying;
+            private set => SetProperty(ref isPlaying, value);
+        }
+
         public void NextImage()
         {
             if (imagePaths.Length == 0 || imagePaths.Length == 1) return;
 
             currentIndex = (currentIndex + 1) % imagePaths.Length;
             OnPropertyChanged(nameof(CurrentImagePath));
+            ResetTimer();
         }
 
         public void PreviousImage()
@@ -55,6 +63,47 @@ namespace Piktosaur.ViewModels
 
             currentIndex = (currentIndex - 1 + imagePaths.Length) % imagePaths.Length;
             OnPropertyChanged(nameof(CurrentImagePath));
+            ResetTimer();
+        }
+
+        public void FirstImage()
+        {
+            if (imagePaths.Length == 0) return;
+
+            currentIndex = 0;
+            OnPropertyChanged(nameof(CurrentImagePath));
+            ResetTimer();
+        }
+
+        public void LastImage()
+        {
+            if (imagePaths.Length == 0) return;
+
+            currentIndex = imagePaths.Length - 1;
+            OnPropertyChanged(nameof(CurrentImagePath));
+            ResetTimer();
+        }
+
+        public void TogglePlayPause()
+        {
+            if (timer == null) return;
+
+            if (IsPlaying)
+            {
+                timer.Stop();
+            }
+            else
+            {
+                timer.Start();
+            }
+            IsPlaying = !IsPlaying;
+        }
+
+        private void ResetTimer()
+        {
+            if (timer == null || !IsPlaying) return;
+            timer.Stop();
+            timer.Start();
         }
 
         private void StartTimer()
