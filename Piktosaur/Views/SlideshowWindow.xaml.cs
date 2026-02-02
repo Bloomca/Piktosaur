@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Microsoft.UI;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
@@ -12,8 +13,11 @@ namespace Piktosaur.Views
 {
     public sealed partial class SlideshowWindow : Window
     {
+        private static readonly TimeSpan ControlsHideDelay = TimeSpan.FromSeconds(3);
+
         private readonly SlideshowVM viewModel;
         private AppWindow? appWindow;
+        private DispatcherQueueTimer? controlsHideTimer;
 
         public SlideshowWindow()
         {
@@ -26,13 +30,40 @@ namespace Piktosaur.Views
 
             Closed += OnWindowClosed;
 
+            SetupControlsHideTimer();
             UpdateImage();
             SetFullScreen();
         }
 
         private void OnWindowClosed(object sender, WindowEventArgs args)
         {
+            controlsHideTimer?.Stop();
             viewModel.Dispose();
+        }
+
+        private void SetupControlsHideTimer()
+        {
+            var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            if (dispatcherQueue == null) return;
+
+            controlsHideTimer = dispatcherQueue.CreateTimer();
+            controlsHideTimer.Interval = ControlsHideDelay;
+            controlsHideTimer.IsRepeating = false;
+            controlsHideTimer.Tick += (s, e) =>
+            {
+                if (!Controls.IsPointerOver)
+                {
+                    Controls.Hide();
+                }
+            };
+            controlsHideTimer.Start();
+        }
+
+        private void ShowControlsAndResetTimer()
+        {
+            Controls.Show();
+            controlsHideTimer?.Stop();
+            controlsHideTimer?.Start();
         }
 
         private void SetFullScreen()
@@ -91,7 +122,13 @@ namespace Piktosaur.Views
         private void OnSpacePressed(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
             viewModel.TogglePlayPause();
+            ShowControlsAndResetTimer();
             args.Handled = true;
+        }
+
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            ShowControlsAndResetTimer();
         }
     }
 }
