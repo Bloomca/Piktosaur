@@ -11,7 +11,7 @@
   <Identity
     Name="Jesseva.Piktosaur"
     Publisher="CN=0157F8E1-6678-4F3D-99C1-A268AB6D59AA"
-    Version="1.0.3.0" />
+    Version="1.0.4.0" />
 
   <mp:PhoneIdentity PhoneProductId="10482f4a-9988-47e2-aafe-8888f7087843" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
